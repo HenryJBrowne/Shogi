@@ -10,48 +10,49 @@ public class Lance extends Piece {
     }
 
     @Override
+    public boolean canBeDropped(int destination_x, int destination_y) {
+
+        if (this.is_captured == true && board.getPiece(destination_x, destination_y) == null) {
+
+            if (this.isWhite() && destination_y > 7 || this.isBlack() && destination_y < 1 || (this.moveIsOutOfBounds(destination_x, destination_y))) {
+                return false;
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public boolean canMove(int destination_x, int destination_y) {
-        // A Lance...
-        //
-        //
 
-        // Do not allow the peice to move outside the board
+        // do not allow the peice to move outside the board
 
-        if (destination_x > 8) {
+        if (this.moveIsOutOfBounds(destination_x, destination_y)) {
             return false;
         }
 
-        // if the peice is captured allow it to be dropped anywhere empty but not
-        // somewhere it cannot move
+        // if the peice is captured allow it to be dropped anywhere if empty and can
+        // move on next turn
 
-        if (this.is_captured == true && board.getPiece(destination_x, destination_y) == null) {
-            if (this.isWhite() && destination_y == 8) {
-                return false;
-            }
-            if (this.isBlack() && destination_y == 0) {
-                return false;
-            }
+        if (this.canBeDropped(destination_x, destination_y)) {
             return true;
         }
 
-        // If there is a piece at the destination, and it is our own, dont let us move
-        // there ++...
+        // if there is a piece at the destination, and it is our own, dont let us move
+        // there
 
-        if (this.is_checking == false) {
-
-            Piece possiblePiece = board.getPiece(destination_x, destination_y);
-
-            if (possiblePiece != null) {
-                if (possiblePiece.isWhite() && this.isWhite()) {
-                    return false;
-                }
-                if (possiblePiece.isBlack() && this.isBlack()) {
-                    return false;
-                }
-            }
+        if (this.moveIsOnTopOfOwnPiece(destination_x, destination_y)) {
+            return false;
         }
 
-        // promoted  moves...
+        // dont allow piece to move if puts us in check
+
+        if (this.moveChecksOwnKing(destination_x, destination_y)) {
+            return false;
+        }
+
+        // promoted moves
 
         if (this.is_promoted() == true) {
 
@@ -77,7 +78,7 @@ public class Lance extends Piece {
             }
         }
 
-        // If it is trying to move somewhere not in a straight line forward, dont let it
+        // if it is trying to move somewhere not in a straight line forward, dont let it
 
         if (this.getX() != destination_x) {
             return false;
@@ -94,7 +95,7 @@ public class Lance extends Piece {
             }
         }
 
-        // Whatever direction it is make sure there is nothing in the way
+        // whatever direction it is make sure there is nothing in the way
 
         if (this.isBlack() == false) {
             int spaces_to_move = Math.abs(destination_y - this.getY());
@@ -113,7 +114,6 @@ public class Lance extends Piece {
                 }
             }
         }
-
 
         return true;
     }

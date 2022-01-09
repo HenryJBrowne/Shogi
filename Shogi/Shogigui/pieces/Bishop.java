@@ -11,40 +11,34 @@ public class Bishop extends Piece {
 
     @Override
     public boolean canMove(int destination_x, int destination_y) {
-        // For attacking or just moving, a bishop is allowed to move
-        // as many squares diagonally as it wants without jumping over another
-        // piece. He cannot attack his own pieces.
 
-        // Do not allow the peice to move outside the board
+        // do not allow the peice to move outside the board
 
-        if (destination_x > 8) {
+        if (this.moveIsOutOfBounds(destination_x, destination_y)) {
             return false;
         }
 
-        // if the peice is captured allow it to be dropped anywhere if empty
+        // if the peice is captured allow it to be dropped anywhere if empty and can
+        // move on next turn
 
-        if (this.is_captured == true && board.getPiece(destination_x, destination_y) == null) {
+        if (this.canBeDropped(destination_x, destination_y)) {
             return true;
         }
 
-        // If there is a piece at the destination, and it is our own, dont let us move
-        // there ++...
+        // if there is a piece at the destination, and it is our own, dont let us move
+        // there
 
-        if (this.is_checking == false) {
-
-            Piece possiblePiece = board.getPiece(destination_x, destination_y);
-
-            if (possiblePiece != null) {
-                if (possiblePiece.isWhite() && this.isWhite()) {
-                    return false;
-                }
-                if (possiblePiece.isBlack() && this.isBlack()) {
-                    return false;
-                }
-            }
+        if (this.moveIsOnTopOfOwnPiece(destination_x, destination_y)) {
+            return false;
         }
 
-        // promoted moves...
+        // dont allow piece to move if puts us in check
+
+        if (this.moveChecksOwnKing(destination_x, destination_y)) {
+            return false;
+        }
+
+        // promoted moves
 
         if (this.is_promoted() == true) {
 
@@ -54,7 +48,7 @@ public class Bishop extends Piece {
             }
         }
 
-        // If it is trying to move somewhere not in a diagonal line, dont let it...
+        // if it is trying to move somewhere not in a diagonal line, dont let it
 
         if (this.getX() == destination_x || this.getY() == destination_y) {
             return false;
@@ -66,24 +60,11 @@ public class Bishop extends Piece {
             return false;
         }
 
-        // Find out what direction we're trying to move
+        // find out what direction we're trying to move
 
-        String direction = "";
+        String direction = this.getMoveDirection(destination_x, destination_y);
 
-        if (destination_x < this.getX() && destination_y < this.getY()) {
-            direction = "NW";
-        }
-        if (destination_x > this.getX() && destination_y < this.getY()) {
-            direction = "NE";
-        }
-        if (destination_x > this.getX() && destination_y > this.getY()) {
-            direction = "SE";
-        }
-        if (destination_x < this.getX() && destination_y > this.getY()) {
-            direction = "SW";
-        }
-
-        // Whatever direction it is make sure there is nothing in the way
+        // whatever direction it is make sure there is nothing in the way                        //++make more efficiant...
 
         if (direction.equals("NW")) {
             int spaces_to_move = Math.abs(destination_y - this.getY()); // difference in y is all equal to difference in
@@ -122,6 +103,8 @@ public class Bishop extends Piece {
                 }
             }
         }
+
+        // Dont let piece move if it results in check...
 
         return true;
     }

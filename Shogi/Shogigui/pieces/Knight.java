@@ -10,49 +10,57 @@ public class Knight extends Piece {
     }
 
     @Override
+    public boolean canBeDropped(int destination_x, int destination_y) {
+
+        if (this.is_captured == true && board.getPiece(destination_x, destination_y) == null) {
+
+            if (this.isWhite() && destination_y > 6 || this.isBlack() && destination_y < 2 || (this.moveIsOutOfBounds(destination_x, destination_y))) {
+                return false;
+            }
+            return true;
+
+        }
+        return false;
+    }
+
+    @Override
     public boolean canMove(int destination_x, int destination_y) {
-        // A knight can move in any L shape forward and can jump over anyone
-        // in order to do so. He cannot attack his own pieces.
-        // By an L shape, I mean it can move to a square that is 2 squares away
-        // horizontally and 1 square away vertically, or 1 square away horizontally
-        // and 2 squares away vertically.
 
-        // Do not allow the peice to move outside the board
+        // do not allow the peice to move outside the board
 
-        if (destination_x > 8) {
+        if (this.moveIsOutOfBounds(destination_x, destination_y)) {
             return false;
         }
 
-        // if the peice is captured allow it to be dropped anywhere if empty
+        // if the peice is captured allow it to be dropped anywhere if empty and can
+        // move on next turn
 
-        if (this.is_captured == true && board.getPiece(destination_x, destination_y) == null) {
+        if (this.canBeDropped(destination_x, destination_y)) {
             return true;
         }
 
-        // If there is a piece at the destination, and it is our own, dont let us move
-        // there ++...
+        // if there is a piece at the destination, and it is our own, dont let us move
+        // there
 
-        if (this.is_checking == false) {
-
-            Piece possiblePiece = board.getPiece(destination_x, destination_y);
-
-            if (possiblePiece != null) {
-                if (possiblePiece.isWhite() && this.isWhite()) {
-                    return false;
-                }
-                if (possiblePiece.isBlack() && this.isBlack()) {
-                    return false;
-                }
-            }
+        if (this.moveIsOnTopOfOwnPiece(destination_x, destination_y)) {
+            return false;
         }
-        
-         // promoted moves
 
-         if (this.is_promoted() == true) {
+        // dont allow piece to move if puts us in check
+
+        if (this.moveChecksOwnKing(destination_x, destination_y)) {
+            return false;
+        }
+
+        // promoted moves
+
+        if (this.is_promoted() == true) {
 
             if (this.isBlack() == true) {
 
-                if ((Math.abs(destination_x - this.getX()) == 1 && Math.abs(destination_y - this.getY()) == 2&&destination_y<this.getY())||(this.getY() == destination_y + 1 && Math.abs(destination_x - this.getX()) <= 1)
+                if ((Math.abs(destination_x - this.getX()) == 1 && Math.abs(destination_y - this.getY()) == 2
+                        && destination_y < this.getY())
+                        || (this.getY() == destination_y + 1 && Math.abs(destination_x - this.getX()) <= 1)
                         || (this.getY() == destination_y - 1 && (destination_x == this.getX()))
                         || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1) {
                     return true;
@@ -62,7 +70,9 @@ public class Knight extends Piece {
                     return false;
                 }
             } else {
-                if (((Math.abs(destination_x - this.getX()) == 1 && Math.abs(destination_y - this.getY()) == 2&&destination_y>this.getY())||this.getY() == destination_y - 1 && Math.abs(destination_x - this.getX()) <= 1)
+                if (((Math.abs(destination_x - this.getX()) == 1 && Math.abs(destination_y - this.getY()) == 2
+                        && destination_y > this.getY())
+                        || this.getY() == destination_y - 1 && Math.abs(destination_x - this.getX()) <= 1)
                         || (this.getY() == destination_y + 1 && (destination_x == this.getX()))
                         || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1) {
                     return true;
@@ -72,27 +82,24 @@ public class Knight extends Piece {
             }
         }
         // the knight can only move forward
-       
-        if (this.isBlack() == true) {
-            if (destination_y>this.getY()){
-                return false;
-            }
-        }
-        else{
-            if (destination_y<this.getY()){
-                return false;
-            }
-        }
 
+        if (this.isBlack() == true) {
+            if (destination_y > this.getY()) {
+                return false;
+            }
+        } else {
+            if (destination_y < this.getY()) {
+                return false;
+            }
+        }
 
         // if the knight moves two squares in the y and moves 1 square in the x its a
         // valid move
 
         if (Math.abs(destination_x - this.getX()) == 1 && Math.abs(destination_y - this.getY()) == 2) {
             return true;
-        } 
+        }
 
-       
         return false;
     }
 }

@@ -48,14 +48,14 @@ public class Menu extends JComponent {
         this.setVisible(true);
         this.requestFocus();
 
-        updateMenu();
+        drawMenu();
     }
 
-    private void updateMenu() {
+    private void drawMenu() {
 
         Menu_Images.clear();
 
-        // static buttons
+        // add static buttons
 
         Menu_Images.add(new ImageFactory(Play_Button_File_Path, 75, 275)); 
         
@@ -63,7 +63,7 @@ public class Menu extends JComponent {
 
         Menu_Images.add(new ImageFactory(Quit_Button_File_Path, 725,275));
 
-        // non static buttons 
+        // add non static buttons 
 
         if (HintsOn) {
             Hints_Button_File_Path = Hints_ButtonON_File_Path;
@@ -108,9 +108,9 @@ public class Menu extends JComponent {
             int mouse_X = e.getX();
             int mouse_Y = e.getY();
 
-            for (ImageFactory image : Menu_Images) {
+            // detect button pressed
 
-                // detect button pressed
+            for (ImageFactory image : Menu_Images) {
 
                 if (mouse_X > image.getRect().getX() && mouse_X < image.getRect().getX() + Button_Width
                         && mouse_Y > image.getRect().getY() && mouse_Y < image.getRect().getY() + Button_Height) {
@@ -138,7 +138,7 @@ public class Menu extends JComponent {
                 }
             }
 
-            updateMenu();
+            drawMenu();
         }
     };
 

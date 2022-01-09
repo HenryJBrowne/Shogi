@@ -2,10 +2,10 @@ package Shogigui.pieces;
 
 import Shogigui.Board;
 
-// >>> TO DO <<<
-//
-// MAKE SURE PAWN DROP CANNOT CAUSE INSTANT CHECK MATE... 
-//
+// ++
+// [MAKE SURE PAWN DROP CANNOT CAUSE INSTANT CHECK MATE... 
+// AND PAWN CANNOT BE DROPPED IN SAME COLUMN AS A UN PROMOTED PAWN]
+// ++
 
 public class Pawn extends Piece {
 
@@ -15,71 +15,61 @@ public class Pawn extends Piece {
     }
 
     @Override
-    public boolean canMove(int destination_x, int destination_y) {
-        // A pawn may only move towards the oponent's side of the board.
-        // It may only move one space.
-
-        // Do not allow the peice to move outside the board
-
-        if (destination_x > 8) {
-            return false;
-        }
-
-        // if the peice is captured allow it to be dropped anywhere empty but not
-        // somewhere it cannot move or some where in a row containing another pawn
-        // +cannot drop into checkmate
+    public boolean canBeDropped(int destination_x, int destination_y) {
 
         if (this.is_captured == true && board.getPiece(destination_x, destination_y) == null) {
-            if (this.isWhite()) {
-                if (destination_y == 8) {
-                    return false;
-                }
-                for (int x = 0; x < 9; x++) {
-                    if (board.getPiece(x, destination_y) != null) {
-                        if (board.getPiece(x, destination_y).getClass().equals(Pawn.class)
-                                && board.getPiece(x, destination_y).isWhite()) {
-                            return false;
-                        }
-                    }
-                }
+
+            if (this.isWhite() && destination_y > 7 || this.isBlack() && destination_y < 1 || (this.moveIsOutOfBounds(destination_x, destination_y))) {
+                return false;
             }
 
-            if (this.isBlack()) {
-                if (destination_y == 0) {
-                    return false;
-                }
-                for (int x = 0; x < 9; x++) {
-                    if (board.getPiece(x, destination_y) != null) {
-                        if (board.getPiece(x, destination_y).getFilePath() == "Pawn.png"
-                                && board.getPiece(x, destination_y).isBlack()) {
-                            return false;
-                        }
+            for (int y = 0; y < board.getROWS(); y++) {
+                if (board.getPiece(destination_x, y) != null) {
+                    if (board.getPiece(destination_x, y).getClass().equals(Pawn.class)
+                            && (board.getPiece(destination_x, y).isWhite() && this.isWhite()
+                                    || board.getPiece(destination_x, y).isBlack() && this.isBlack())) {
+                        return false;
                     }
                 }
             }
             return true;
         }
+        return false;
+    }
 
-        // If there is a piece at the destination, and it is our own, dont let us move
-        // there ++...
+    @Override
+    public boolean canMove(int destination_x, int destination_y) {
 
-        if (this.is_checking == false) {
+        // do not allow the peice to move outside the board
 
-            Piece possiblePiece = board.getPiece(destination_x, destination_y);
+        if (this.moveIsOutOfBounds(destination_x, destination_y)) {
+            return false;
+        }
 
-            if (possiblePiece != null) {
-                if (possiblePiece.isWhite() && this.isWhite()) {
-                    return false;
-                }
-                if (possiblePiece.isBlack() && this.isBlack()) {
-                    return false;
-                }
-            }
+        // if the peice is captured allow it to be dropped anywhere if empty and can
+        // move on next turn (Pawns cannot be dropped on same column as players own
+        // pawns)
+
+        if (this.canBeDropped(destination_x, destination_y)) {
+            return true;
+        }
+
+        // if there is a piece at the destination, and it is our own, dont let us move
+        // there
+
+        if (this.moveIsOnTopOfOwnPiece(destination_x, destination_y)) {
+            return false;
+        }
+
+        // dont allow piece to move if puts us in check
+
+        if (this.moveChecksOwnKing(destination_x, destination_y)) {
+            return false;
         }
 
         if (this.is_promoted == false) {
 
-            // If it is trying to move somewhere not in a straight line forward, more than 1
+            // if it is trying to move somewhere not in a straight line forward, more than 1
             // space forward or backwards dont let it
 
             if (this.getX() != destination_x) {
@@ -98,7 +88,7 @@ public class Pawn extends Piece {
             }
         } else {
 
-            // Promoted moves...
+            // promoted moves
 
             if (this.isBlack() == true) {
 
@@ -123,4 +113,5 @@ public class Pawn extends Piece {
         }
         return true;
     }
+
 }

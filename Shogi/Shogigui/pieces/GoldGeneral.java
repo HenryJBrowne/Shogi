@@ -11,40 +11,34 @@ public class GoldGeneral extends Piece {
 
     @Override
     public boolean canMove(int destination_x, int destination_y) {
-        // A Gold General can move ...
-        //
-        //
 
-        // Do not allow the peice to move outside the board
+        // do not allow the peice to move outside the board
 
-        if (destination_x > 8) {
+        if (this.moveIsOutOfBounds(destination_x, destination_y)) {
             return false;
         }
 
-        // if the peice is captured allow it to be dropped anywhere if empty
+        // if the peice is captured allow it to be dropped anywhere if empty and can
+        // move on next turn
 
-        if (this.is_captured == true && board.getPiece(destination_x, destination_y) == null) {
+        if (this.canBeDropped(destination_x, destination_y)) {
             return true;
         }
 
-        // If there is a piece at the destination, and it is our own, dont let us move
-        // there ++...
+        // if there is a piece at the destination, and it is our own, dont let us move
+        // there
 
-        if (this.is_checking == false) {
-
-            Piece possiblePiece = board.getPiece(destination_x, destination_y);
-
-            if (possiblePiece != null) {
-                if (possiblePiece.isWhite() && this.isWhite()) {
-                    return false;
-                }
-                if (possiblePiece.isBlack() && this.isBlack()) {
-                    return false;
-                }
-            }
+        if (this.moveIsOnTopOfOwnPiece(destination_x, destination_y)) {
+            return false;
         }
 
-        // Only allow the gold general...
+        // dont allow piece to move if puts us in check
+
+        if (this.moveChecksOwnKing(destination_x, destination_y)) {
+            return false;
+        }
+
+        // only allow the gold general...
 
         if (this.isBlack() == true) {
 
