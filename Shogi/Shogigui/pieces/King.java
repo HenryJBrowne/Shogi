@@ -35,9 +35,9 @@ public class King extends Piece {
 
         // dont allow the king to move into space that puts it in check
 
-        if (this.is_checking == false) {    // when checking to see if king is defending piece allow it to move into check
+        if (this.checking_if_defender == false) { // when checking to see if king is defending piece allow it to move into check
 
-            ArrayList<Board.Coordinate> dangerousSquares;
+            ArrayList<Board.Square> dangerousSquares;
 
             if (this.isWhite()) {
                 dangerousSquares = board.getBlackAttackingSquares();
@@ -46,7 +46,7 @@ public class King extends Piece {
             }
             if (dangerousSquares != null) {
 
-                for (Board.Coordinate square : dangerousSquares) {
+                for (Board.Square square : dangerousSquares) {
 
                     if (destination_x == square.x && destination_y == square.y
                             || (board.getPiece(destination_x, destination_y) != null
@@ -58,11 +58,62 @@ public class King extends Piece {
                 }
             }
         }
-            return true;
-
-        
+        return true;
     }
-    // @Override
-    // public boolean canMoveToStopCheck(int destination_x, int destination_y) { }
+
+    @Override
+    public boolean canMoveToStopCheck(int destination_x, int destination_y) {
+
+        ArrayList<Piece> checkingPieces= (board.whiteIschecked())?board.getPiecesCheckingWhiteKing():board.getPiecesCheckingBlackKing(); 
+
+        // check if king can capture piece, if piece is protected it cannot
+
+        for (Piece p : checkingPieces) {
+
+            if (destination_x == p.getX() && destination_y == p.getY()) {
+
+                return (p.is_protected)? false: true;
+            }
+
+        }
+        // check if king can move into space to get out of check
+
+        if (this.canMove(destination_x, destination_y)) {
+
+            // make sure it cannot move into a space that is in the path of the piece
+            // checking it
+
+            for (Piece p : checkingPieces) {
+
+                // check if piece checking it can move multiple squares if so
+
+                if (p.getClass() != Bishop.class && p.getClass() != Lance.class && p.getClass() != Rook.class) {
+                    return true; // ++ fix extendability...
+                } else {
+
+                    // make sure it cannot move into a space that is in the path of the piece
+                    // checking it
+
+                    String direction = getMoveDirection(p.getX(),p.getY(),this.getX(), this.getY()); // ++ [test] fix efficiancy
+
+                    ArrayList<Board.Square> pMovementRange = p.getMovementRange(direction);
+
+                    if (pMovementRange != null) {
+
+                        for (Board.Square square : pMovementRange) {
+
+                            if (destination_x == square.x && square.y == destination_y) {
+
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
+
+    }
 
 }

@@ -60,51 +60,11 @@ public class Bishop extends Piece {
             return false;
         }
 
-        // find out what direction we're trying to move
+        // make sure their is nothing in the way of the move
 
-        String direction = this.getMoveDirection(destination_x, destination_y);
-
-        // whatever direction it is make sure there is nothing in the way                        //++make more efficiant...
-
-        if (direction.equals("NW")) {
-            int spaces_to_move = Math.abs(destination_y - this.getY()); // difference in y is all equal to difference in
-                                                                        // x
-            for (int i = 1; i < spaces_to_move; i++) {
-                Piece p = board.getPiece(this.getX() - i, this.getY() - i);
-                if (p != null) {
-                    return false;
-                }
-            }
+        if (nothingBetweenPosAndMoveDest(destination_x, destination_y) == false) {
+            return false;
         }
-        if (direction.equals("NE")) {
-            int spaces_to_move = Math.abs(destination_y - this.getY());
-            for (int i = 1; i < spaces_to_move; i++) {
-                Piece p = board.getPiece(this.getX() + i, this.getY() - i);
-                if (p != null) {
-                    return false;
-                }
-            }
-        }
-        if (direction.equals("SE")) {
-            int spaces_to_move = Math.abs(destination_y - this.getY());
-            for (int i = 1; i < spaces_to_move; i++) {
-                Piece p = board.getPiece(this.getX() + i, this.getY() + i);
-                if (p != null) {
-                    return false;
-                }
-            }
-        }
-        if (direction.equals("SW")) {
-            int spaces_to_move = Math.abs(destination_y - this.getY());
-            for (int i = 1; i < spaces_to_move; i++) {
-                Piece p = board.getPiece(this.getX() - i, this.getY() + i);
-                if (p != null) {
-                    return false;
-                }
-            }
-        }
-
-        // Dont let piece move if it results in check...
 
         return true;
     }

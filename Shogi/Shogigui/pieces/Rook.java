@@ -54,47 +54,10 @@ public class Rook extends Piece {
             return false;
         }
 
-        // find out what direction we're trying to move
+        // make sure their is nothing in the way of the move
 
-        String direction = this.getMoveDirection(destination_x, destination_y);  
-
-        // whatever direction it is make sure there is nothing in the way       //++make more efficiant...
-
-        if (direction.equals("S")) {
-            int spaces_to_move = Math.abs(destination_y - this.getY());
-            for (int i = 1; i < spaces_to_move; i++) {
-                Piece p = board.getPiece(this.getX(), this.getY() + i);
-                if (p != null) {
-                    return false;
-                }
-            }
-        }
-        if (direction.equals("N")) {
-            int spaces_to_move = Math.abs(destination_y - this.getY());
-            for (int i = 1; i < spaces_to_move; i++) {
-                Piece p = board.getPiece(this.getX(), this.getY() - i);
-                if (p != null) {
-                    return false;
-                }
-            }
-        }
-        if (direction.equals("W")) {
-            int spaces_to_move = Math.abs(destination_x - this.getX());
-            for (int i = 1; i < spaces_to_move; i++) {
-                Piece p = board.getPiece(this.getX() - i, this.getY());
-                if (p != null) {
-                    return false;
-                }
-            }
-        }
-        if (direction.equals("E")) {
-            int spaces_to_move = Math.abs(destination_x - this.getX());
-            for (int i = 1; i < spaces_to_move; i++) {
-                Piece p = board.getPiece(this.getX() + i, this.getY());
-                if (p != null) {
-                    return false;
-                }
-            }
+        if (nothingBetweenPosAndMoveDest(destination_x,destination_y)==false){
+            return false;
         }
 
         return true;

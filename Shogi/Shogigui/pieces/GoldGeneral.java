@@ -42,23 +42,13 @@ public class GoldGeneral extends Piece {
 
         if (this.isBlack() == true) {
 
-            if ((this.getY() == destination_y + 1 && Math.abs(destination_x - this.getX()) <= 1)
+            return ((this.getY() == destination_y + 1 && Math.abs(destination_x - this.getX()) <= 1)
                     || (this.getY() == destination_y - 1 && (destination_x == this.getX()))
-                    || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1) {
-                return true;
-            }
-
-            else {
-                return false;
-            }
+                    || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1)?true:false; 
         } else {
-            if ((this.getY() == destination_y - 1 && Math.abs(destination_x - this.getX()) <= 1)
+            return ((this.getY() == destination_y - 1 && Math.abs(destination_x - this.getX()) <= 1)
                     || (this.getY() == destination_y + 1 && (destination_x == this.getX()))
-                    || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1) {
-                return true;
-            } else {
-                return false;
-            }
+                    || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1)? true:false;
         }
     }
 }

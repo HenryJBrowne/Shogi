@@ -14,7 +14,8 @@ public class Lance extends Piece {
 
         if (this.is_captured == true && board.getPiece(destination_x, destination_y) == null) {
 
-            if (this.isWhite() && destination_y > 7 || this.isBlack() && destination_y < 1 || (this.moveIsOutOfBounds(destination_x, destination_y))) {
+            if (this.isWhite() && destination_y > 7 || this.isBlack() && destination_y < 1
+                    || (this.moveIsOutOfBounds(destination_x, destination_y))) {
                 return false;
             }
 
@@ -58,23 +59,13 @@ public class Lance extends Piece {
 
             if (this.isBlack() == true) {
 
-                if ((this.getY() == destination_y + 1 && Math.abs(destination_x - this.getX()) <= 1)
+                return ((this.getY() == destination_y + 1 && Math.abs(destination_x - this.getX()) <= 1)
                         || (this.getY() == destination_y - 1 && (destination_x == this.getX()))
-                        || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1) {
-                    return true;
-                }
-
-                else {
-                    return false;
-                }
+                        || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1)? true:false; 
             } else {
-                if ((this.getY() == destination_y - 1 && Math.abs(destination_x - this.getX()) <= 1)
+                return ((this.getY() == destination_y - 1 && Math.abs(destination_x - this.getX()) <= 1)
                         || (this.getY() == destination_y + 1 && (destination_x == this.getX()))
-                        || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1) {
-                    return true;
-                } else {
-                    return false;
-                }
+                        || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1)? true:false;
             }
         }
 
@@ -95,24 +86,10 @@ public class Lance extends Piece {
             }
         }
 
-        // whatever direction it is make sure there is nothing in the way
+        // make sure their is nothing in the way of the move
 
-        if (this.isBlack() == false) {
-            int spaces_to_move = Math.abs(destination_y - this.getY());
-            for (int i = 1; i < spaces_to_move; i++) {
-                Piece p = board.getPiece(this.getX(), this.getY() + i);
-                if (p != null) {
-                    return false;
-                }
-            }
-        } else {
-            int spaces_to_move = Math.abs(destination_y - this.getY());
-            for (int i = 1; i < spaces_to_move; i++) {
-                Piece p = board.getPiece(this.getX(), this.getY() - i);
-                if (p != null) {
-                    return false;
-                }
-            }
+        if (nothingBetweenPosAndMoveDest(destination_x, destination_y) == false) {
+            return false;
         }
 
         return true;
