@@ -17,19 +17,18 @@ public class Board extends JComponent {
     private ArrayList<Piece> White_Pieces;
     private ArrayList<Piece> Black_Pieces;
 
+    private ArrayList<ImageFactory> Background_Image;
     private ArrayList<ImageFactory> Static_Images;
     private ArrayList<ImageFactory> Piece_Images; // ++ [use image factory interface...?]
+    private ArrayList<ImageFactory> Tutorial_Images;
 
     private Piece Active_Piece;
     private Piece Previous_Peice;
     private ArrayList<Piece> possiblePromotion = new ArrayList<Piece>();
     private boolean PromotionButtonOn = false;
 
-    private boolean HintsDisplayed;
-
     private final int ROWS = 9;
     private final int COLS = 9;
-    private Integer[][] BoardGrid;
 
     private boolean WhiteIsChecked = false;
     private boolean BlackIsChecked = false;
@@ -48,17 +47,27 @@ public class Board extends JComponent {
     private ArrayList<Square> checkMateMoves=null; // ++ 
 
     private final String board_images_file_path = "images" + File.separator + "board" + File.separator;
+    private final String background_image_file_path= board_images_file_path + "Background.png";
+    private final String red_background_image_file_path= board_images_file_path + "red_background.png";
 
     private final String board_file_path = board_images_file_path + "board.png";
     private final String active_square_file_path = board_images_file_path + "active_square.png";
     private final String good_square_file_path = board_images_file_path + "good_square.png";
     private final String drop_square_file_path = board_images_file_path + "drop_square.png";
-    private final String promote_button_file_path = board_images_file_path + "promote_button.png";
-    private final String dont_promote_button_file_path = board_images_file_path + "dont_promote_button.png";
+    private final String promote_buttons_file_path = board_images_file_path + "promote_buttons.png";
     private final String white_pieces_file_path = board_images_file_path + "white_pieces" + File.separator;
     private final String black_pieces_file_path = board_images_file_path + "black_pieces" + File.separator;
     private final String promoted_white_pieces_file_path = white_pieces_file_path + "Promoted" + File.separator;
     private final String promoted_black_pieces_file_path = black_pieces_file_path + "Promoted" + File.separator;
+
+    private final String tutorial_white_pieces_file_path = white_pieces_file_path + "Tutorial" + File.separator;
+    private final String tutorial_black_pieces_file_path = black_pieces_file_path + "Tutorial" + File.separator;
+    private final String promoted_tutorial_white_pieces_file_path = white_pieces_file_path + "Tutorial" + File.separator+ "Promoted" + File.separator;
+    private final String promoted_tutorial_black_pieces_file_path = black_pieces_file_path + "Tutorial" + File.separator+ "Promoted" + File.separator;
+
+    private final String check_file_path = board_images_file_path + "Check.png";
+    private final String white_checkmate_file_path = board_images_file_path + "white_check_mate.png";
+    private final String black_checkmate_file_path = board_images_file_path + "black_check_mate.png";
 
     private boolean PlayerIsWhite; 
     private boolean HintsOn;
@@ -72,17 +81,6 @@ public class Board extends JComponent {
             this.x = x;
             this.y = y;
         }
-    }
-
-    private void initBoard() {
-
-        for (int x = 0; x < ROWS; x++) {
-            for (int y = 0; y < COLS; y++) {
-                BoardGrid[x][y] = 0;
-            }
-        }
-
-        initPieces();
     }
 
     // ++
@@ -163,18 +161,17 @@ public class Board extends JComponent {
         this.HintsOn = HintsOn;
         this.TutorialOn = TutorialOn;
 
-        HintsDisplayed =(PlayerIsWhite)?true:false;
-
-        BoardGrid = new Integer[ROWS][COLS];
+        Background_Image= new ArrayList<ImageFactory>();
         Static_Images = new ArrayList<ImageFactory>();
         Piece_Images = new ArrayList<ImageFactory>();
+        Tutorial_Images = new ArrayList<ImageFactory>();
         White_Pieces = new ArrayList<Piece>();
         Black_Pieces = new ArrayList<Piece>();
 
         PiecesCheckingWhiteKing = new ArrayList<Piece>();
         PiecesCheckingBlackKing = new ArrayList<Piece>();
 
-        initBoard();
+        initPieces();
 
         this.setBackground(new Color(245, 255, 250));
         this.setPreferredSize(new Dimension(1100, 580)); // board: 580x580
@@ -193,16 +190,35 @@ public class Board extends JComponent {
 
         Piece_Images.clear();
         Static_Images.clear();
+        Tutorial_Images.clear();
+
+        // add background 
+
+        Background_Image.add(new ImageFactory(background_image_file_path, 0, 0));
 
         // add board grid
 
         Static_Images.add(new ImageFactory(board_file_path, 0, 0));
 
-        // add active square if a piece is clicked
+        // add active square if a piece is clicked and tutorial image corresponding to piece (if tutorials are on)
 
         if (Active_Piece != null) {
             Static_Images.add(new ImageFactory(active_square_file_path, Square_Width * Active_Piece.getX(),
                     Square_Width * Active_Piece.getY()));
+
+            if (TutorialOn && checkForCheckMate()==false){        
+                
+                String tutorial_file_path="";
+
+                if (/*PlayerIsWhite &&*/Active_Piece.isWhite()){
+                    tutorial_file_path= (!Active_Piece.is_promoted())?tutorial_white_pieces_file_path:promoted_tutorial_white_pieces_file_path;
+                }
+                else if ((/*PlayerIsWhite==false &&*/Active_Piece.isBlack())){
+                    tutorial_file_path= (!Active_Piece.is_promoted())?tutorial_black_pieces_file_path:promoted_tutorial_black_pieces_file_path;
+                }
+
+                Tutorial_Images.add(new ImageFactory(tutorial_file_path+Active_Piece.getFilePath(), Square_Width * 9, Square_Width * 2.6));
+            }
         }
 
         // add pieces / update piece positions
@@ -226,21 +242,44 @@ public class Board extends JComponent {
 
             Piece_Images.add(new ImageFactory(piece_file_path, Square_Width * COL, Square_Width * ROW));
         }
-        // add promotion buttons if promotion is availiable
 
-        if (PromotionButtonOn == true) {
+        // add check mate display (when check mated)
 
-            Static_Images.add(new ImageFactory(promote_button_file_path, Square_Width * 15, Square_Width * 8));
+        if (checkForCheckMate()) {
 
-            Static_Images.add(new ImageFactory(dont_promote_button_file_path, Square_Width * 16, Square_Width * 8));
+            String checkmate_file_path= whiteIschecked()?white_checkmate_file_path:black_checkmate_file_path;
+
+            Static_Images.add(new ImageFactory(checkmate_file_path, Square_Width * 9, Square_Width * 2.6));
         }
 
-        // ADD HINTS
+           // add check display (when checked)
+
+        else if (whiteIschecked() || blackIschecked()) {
+
+            Background_Image.clear();
+
+            Background_Image.add(new ImageFactory(red_background_image_file_path, 0, 0));
+
+            if (Active_Piece==null && PromotionButtonOn == false){
+                Static_Images.add(new ImageFactory(check_file_path, Square_Width * 9, Square_Width * 2.6));
+            }
+        }
+
+        //  add promotion buttons if promotion is availiable
+
+        if (PromotionButtonOn == true && checkForCheckMate()==false){
+                
+            if (Active_Piece==null){
+                Static_Images.add(new ImageFactory(promote_buttons_file_path, Square_Width * 9, Square_Width * 2.6));
+            }   
+        }
+
+        // ADD HINTS / ASSISTS
 
         // add / update hints (dependent on turn) if player hints were turned on
 
-        if (this.HintsOn == true) {
-            if (HintsDisplayed == true) {
+        if (this.HintsOn == true && checkForCheckMate()==false) {
+            if ((whites_turn&&PlayerIsWhite) || ((whites_turn==false&&PlayerIsWhite==false))) {
 
                 // (if a king is checked) add get out of check hints
 
@@ -253,8 +292,6 @@ public class Board extends JComponent {
                     ArrayList<Square> getOutOfCheckMoveHints = new ArrayList<Square>();
                     ArrayList<Square> getOutOfCheckDropHints = new ArrayList<Square>();
 
-                    ArrayList<Piece> pieces= (PlayerIsWhite)? White_Pieces: Black_Pieces; 
-
                     // get squares that can stop the check if a piece can move or be dropped into one of these
                     // squares add corresponding image to this to give player hint to get out of check
 
@@ -266,8 +303,7 @@ public class Board extends JComponent {
                         }
                     }
 
-                    if (getOutOfCheckDrops != null && ((pieces == White_Pieces && Captured_White_Pieces > 0)
-                            || (pieces == Black_Pieces && Captured_Black_Pieces > 0))) {
+                    if (getOutOfCheckDrops != null) {
 
                         for (Square dropSquare : getOutOfCheckDrops) {
                             Static_Images.add(new ImageFactory(drop_square_file_path,
@@ -288,23 +324,13 @@ public class Board extends JComponent {
                                 Square_Width * captureablePiece.getX(), Square_Width * captureablePiece.getY()));
                     }
                 }
+
+                // ++ [if our pieces are capturable hint to the player that these pieces need moving into safety]
+
+
+                // ++ [Create a menu button; this will open menu buttons, where user can return to MENU, REVERT move or QUIT]
+
             }
-        }
-
-        // add check display
-
-        if (whiteIschecked() || blackIschecked()) {
-
-            System.out.println("check"); // ++ [add check graphics]
-        }
-
-        // add check display
-
-        if ((getOutOfcheckMoves==null)
-                && (whiteIschecked() || blackIschecked())) {
-
-            System.out.println("checkmate!"); // ++ [add check mate graphics]
-
         }
 
         // add check mate hints 
@@ -524,7 +550,7 @@ public class Board extends JComponent {
             for (int x = 0; x < ROWS; x++) {
                 for (int y = 0; y < COLS; y++) {
 
-                    if (piece.canBeDroppedToStopCheck(x, y) /*&& piece.canMove(x, y)*/) {
+                    if (piece.canBeDroppedToStopCheck(x, y) && piece.is_captured()/*&& piece.canMove(x, y)*/) {
 
                         getOutOfCheckDrops.add(new Square(x, y));
                     }
@@ -551,10 +577,10 @@ public class Board extends JComponent {
         updatePiecesAttackersAndDefenders();
         updateProtectedPieces();
 
-        if (checkForCheck(getKing(White_Pieces))){
+        if (checkForCheck(getKing(White_Pieces))||whites_turn){
             updateGetOutOfCheckMovesAndDrops(White_Pieces);
         }
-        else if (checkForCheck(getKing(Black_Pieces))){
+        else if (checkForCheck(getKing(Black_Pieces))||whites_turn==false){
             updateGetOutOfCheckMovesAndDrops(Black_Pieces);
         }
     }
@@ -593,10 +619,16 @@ public class Board extends JComponent {
         return false;
     }
 
+    public boolean checkForCheckMate(){
+        return ((getOutOfcheckMoves==null) && (whiteIschecked() || blackIschecked()))?true:false;
+    }
+
     public boolean checkForCheckMateMoves() {
 
-        checkMateMoves = new ArrayList<Square>();
+        checkMateMoves = new ArrayList<Square>();   // getOutOfcheckMoves = squares king can move
 
+            //for all possible moves, check if the kings possible moves are in the movement range of that move, if so and cannot be blocked add to list...
+        
         // ++ [...]
 
 
@@ -609,7 +641,6 @@ public class Board extends JComponent {
 
         ArrayList<Piece> PiecesCheckingKing= (king.isWhite())? PiecesCheckingWhiteKing:PiecesCheckingBlackKing;
   
-
         // Add squares between the 1 piece checking the king and the king to blocking squares
 
         if (PiecesCheckingKing.size()==1 && getSquaresBetween(PiecesCheckingKing.get(0).getX(), PiecesCheckingKing.get(0).getY(), king.getX(), king.getY())!=null) {
@@ -624,7 +655,7 @@ public class Board extends JComponent {
         }
         else if (PiecesCheckingKing.size()==2){
 
-            // double check: only add squares to blocking squares if the squares if they block both checking pieces paths to the king 
+            // double check: only add squares to blocking squares if the squares block both of the checking pieces paths to the king 
 
             for (Square squareBetweenP1AndKing : getSquaresBetween(PiecesCheckingKing.get(0).getX(), PiecesCheckingKing.get(0).getY(), king.getX(), king.getY())){
 
@@ -766,8 +797,9 @@ public class Board extends JComponent {
 
                 else if (Active_Piece != null && Active_Piece.getX() == Clicked_Column
                         && Active_Piece.getY() == Clicked_Row) {
-
+                    
                     Active_Piece = null;
+
                 }
 
                 // if player is in check, active piece is not null and active piece can move to
@@ -851,11 +883,9 @@ public class Board extends JComponent {
 
                     Active_Piece = null;
 
-                    moveCounter++;
+                    moveCounter=moveCounter++;
 
                     toggleTurn();
-
-                    HintsDisplayed = toggle(HintsDisplayed);
 
                     updateBoardStatus();
 
@@ -864,8 +894,8 @@ public class Board extends JComponent {
             } else {
 
                 // detect promote button pressed
-                if (PromotionButtonOn == true && Clicked_Column == 15 && Clicked_Row == 8) {
-
+                if (PromotionButtonOn == true && mouse_X > 692 && mouse_X < 992 && mouse_Y > 190 && mouse_Y < 290) {  // ++ fix button entendability
+ 
                     Previous_Peice.promote(true);
                     PromotionButtonOn = toggle(PromotionButtonOn);
 
@@ -876,7 +906,7 @@ public class Board extends JComponent {
 
                 }
                 // detect do not promote button pressed
-                if (PromotionButtonOn == true && Clicked_Column == 16 && Clicked_Row == 8) {
+                if (PromotionButtonOn == true && mouse_X > 692 && mouse_X < 992 && mouse_Y > 297 && mouse_Y < 399) {
                     PromotionButtonOn = toggle(PromotionButtonOn);
 
                 }
@@ -892,20 +922,20 @@ public class Board extends JComponent {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g;
-        addBackgroundCol(g2);
         addImages(g2);
-    }
 
-    private void addBackgroundCol(Graphics2D g2) {
-        g2.setColor(getBackground());
-        g2.fillRect(0, 0, getWidth(), getHeight());
     }
 
     private void addImages(Graphics2D g2) {
-        for (ImageFactory image : Static_Images) {
-            image.drawImage(g2);
-        }
-        for (ImageFactory image : Piece_Images) {
+
+        ArrayList<ImageFactory> All_Images= new ArrayList<ImageFactory>();
+
+        All_Images.addAll(Background_Image);
+        All_Images.addAll(Static_Images);
+        All_Images.addAll(Piece_Images);
+        All_Images.addAll(Tutorial_Images);
+
+        for (ImageFactory image : All_Images) {
             image.drawImage(g2);
         }
     }

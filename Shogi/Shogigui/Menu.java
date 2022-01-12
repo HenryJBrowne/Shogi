@@ -14,6 +14,7 @@ public class Menu extends JComponent {
     private final int Button_Width = 300;
 
     private final String Menu_Images_File_path= "images" + File.separator + "menu" + File.separator;
+    private final String Background_Image_File_Path= Menu_Images_File_path + "Background.png";
     private final String Play_Button_File_Path = Menu_Images_File_path + "PlayButton.png";
     private final String Controls_Button_File_Path = Menu_Images_File_path + "ControlsButton.png";
     private final String Quit_Button_File_Path = Menu_Images_File_path + "QuitButton.png";
@@ -31,7 +32,7 @@ public class Menu extends JComponent {
     public boolean PlayPressed = false;   // encapsulate and add accessor methods?...
     public boolean PlayerIsWhite = true;
     public boolean HintsOn = true;
-    public boolean TutorialOn = false;
+    public boolean TutorialOn = true;
     
 
     public Menu() {
@@ -148,13 +149,15 @@ public class Menu extends JComponent {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g;
-        addBackgroundCol(g2);
+        addBackground(g2);
         addImages(g2);
     }
 
-    private void addBackgroundCol(Graphics2D g2) {
-        g2.setColor(getBackground());
-        g2.fillRect(0, 0, getWidth(), getHeight());
+    private void addBackground(Graphics2D g2) {
+
+        ImageFactory Background= new ImageFactory(Background_Image_File_Path, 0 , 0);
+        Background.drawImage(g2);
+
     }
 
     private void addImages(Graphics2D g2) {

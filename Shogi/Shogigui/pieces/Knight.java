@@ -14,7 +14,8 @@ public class Knight extends Piece {
 
         if (this.is_captured == true && board.getPiece(destination_x, destination_y) == null) {
 
-            if (this.isWhite() && destination_y > 6 || this.isBlack() && destination_y < 2 || (this.moveIsOutOfBounds(destination_x, destination_y))) {
+            if (this.isWhite() && destination_y > 6 || this.isBlack() && destination_y < 2
+                    || (this.moveIsOutOfBounds(destination_x, destination_y))) {
                 return false;
             }
             return true;
@@ -52,52 +53,44 @@ public class Knight extends Piece {
             return false;
         }
 
-        // promoted moves
+        if (this.is_promoted() == false) {
 
-        if (this.is_promoted() == true) {
+            // the knight can only move forward
 
             if (this.isBlack() == true) {
-
-                if ((Math.abs(destination_x - this.getX()) == 1 && Math.abs(destination_y - this.getY()) == 2
-                        && destination_y < this.getY())
-                        || (this.getY() == destination_y + 1 && Math.abs(destination_x - this.getX()) <= 1)
-                        || (this.getY() == destination_y - 1 && (destination_x == this.getX()))
-                        || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1) {
-                    return true;
-                }
-
-                else {
+                if (destination_y > this.getY()) {
                     return false;
                 }
             } else {
-                if (((Math.abs(destination_x - this.getX()) == 1 && Math.abs(destination_y - this.getY()) == 2
-                        && destination_y > this.getY())
-                        || this.getY() == destination_y - 1 && Math.abs(destination_x - this.getX()) <= 1)
-                        || (this.getY() == destination_y + 1 && (destination_x == this.getX()))
-                        || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1) {
-                    return true;
-                } else {
+                if (destination_y < this.getY()) {
                     return false;
                 }
             }
-        }
-        // the knight can only move forward
 
-        if (this.isBlack() == true) {
-            if (destination_y > this.getY()) {
-                return false;
+            // if the knight moves two squares in the y and moves 1
+            // square in the x its a valid move
+
+            if (Math.abs(destination_x - this.getX()) == 1 && Math.abs(destination_y - this.getY()) == 2) {
+                return true;
             }
+
         } else {
-            if (destination_y < this.getY()) {
-                return false;
+
+            // promoted moves
+
+            if (this.isBlack() == true) {
+
+                return ((this.getY() == destination_y + 1 && Math.abs(destination_x - this.getX()) <= 1)
+                        || (this.getY() == destination_y - 1 && (destination_x == this.getX()))
+                        || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1) ? true
+                                : false;
+            } else {
+                return ((this.getY() == destination_y - 1 && Math.abs(destination_x - this.getX()) <= 1)
+                        || (this.getY() == destination_y + 1 && (destination_x == this.getX()))
+                        || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1) ? true
+                                : false;
             }
-        }
 
-        // if the knight moves two squares in the y and moves 1 square in the x its a
-        // valid move
-
-        if (Math.abs(destination_x - this.getX()) == 1 && Math.abs(destination_y - this.getY()) == 2) {
-            return true;
         }
 
         return false;

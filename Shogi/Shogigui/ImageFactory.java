@@ -14,7 +14,7 @@ class ImageFactory { //add interface?     +check with factory class design patte
     private Image image;
     private Rectangle2D rect;
     
-    public ImageFactory(String image_file_path, int x, int y) {
+    public ImageFactory(String image_file_path, double x, double y) {
 
         this.image_file_path=image_file_path;
         this.image = loadImage(image_file_path);

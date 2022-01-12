@@ -97,8 +97,8 @@ public class Piece {
 
         ArrayList<Board.Square> SquaresBetweenPieceAndKing = null;
 
-        Piece king= (this.isWhite()) ? board.getKing(board.getWhitePieces()) : board.getKing(board.getBlackPieces());
- 
+        Piece king = (this.isWhite()) ? board.getKing(board.getWhitePieces()) : board.getKing(board.getBlackPieces());
+
         if (this.is_blocking_check_from != null) {
 
             SquaresBetweenPieceAndKing = board.getSquaresBetween(this.is_blocking_check_from.getX(),
@@ -136,9 +136,11 @@ public class Piece {
 
         // check if piece can move into space blocking check
 
-        Piece king= (board.whiteIschecked()) ? board.getKing(board.getWhitePieces()) : board.getKing(board.getBlackPieces());
+        Piece king = (board.whiteIschecked()) ? board.getKing(board.getWhitePieces())
+                : board.getKing(board.getBlackPieces());
 
-        ArrayList<Piece> checkingPieces = (board.whiteIschecked()) ? board.getPiecesCheckingWhiteKing() : board.getPiecesCheckingBlackKing();
+        ArrayList<Piece> checkingPieces = (board.whiteIschecked()) ? board.getPiecesCheckingWhiteKing()
+                : board.getPiecesCheckingBlackKing();
 
         squares = board.getSquaresThatBlockCheck(king);
 
@@ -153,11 +155,12 @@ public class Piece {
         }
 
         // check if piece can capture the opposing piece putting king in check
-        // king cannot capture piece checking it if piece is protected
+        // if they're two pieces checking king (double check) the piece cannot capture a
+        // checking piece to get stop check (this wouldnt stop check)
 
-        for (Piece checkingPiece : checkingPieces) {
+        if (checkingPieces.size() == 1) {
 
-            if (destination_x == checkingPiece.getX() && destination_y == checkingPiece.getY()) {
+            if (destination_x == checkingPieces.get(0).getX() && destination_y == checkingPieces.get(0).getY()) {
                 return true;
             }
         }
@@ -171,11 +174,12 @@ public class Piece {
 
         // check if piece can be dropped into space blocking check
 
-        Piece king= (board.whiteIschecked()) ? board.getKing(board.getWhitePieces()) : board.getKing(board.getBlackPieces());
+        Piece king = (board.whiteIschecked()) ? board.getKing(board.getWhitePieces())
+                : board.getKing(board.getBlackPieces());
 
-        if (board.getSquaresThatBlockCheck(king) != null) {              
+        if (board.getSquaresThatBlockCheck(king) != null) {
 
-            squaresBetweenKingAndAttacker=board.getSquaresThatBlockCheck(king);
+            squaresBetweenKingAndAttacker = board.getSquaresThatBlockCheck(king);
         }
 
         if (squaresBetweenKingAndAttacker != null) {
@@ -285,8 +289,8 @@ public class Piece {
 
     public void changeColour() {
 
-        is_white =(this.isWhite()) ? false : true;
-   
+        is_white = (this.isWhite()) ? false : true;
+
     }
 
     public void setX(int x) {
