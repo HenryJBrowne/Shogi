@@ -7,7 +7,6 @@ import javax.swing.JFrame;
 public class BoardFrame extends JFrame {
     
     private Component component;
-
     private boolean PlayerCol;
     private boolean HintsOn;
     private boolean TutorialOn;
@@ -28,4 +27,5 @@ public class BoardFrame extends JFrame {
         this.pack();
         this.setVisible(true);
     }
+
 }

@@ -14,7 +14,7 @@ public class MenuFrame extends JFrame {
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setTitle("Shogi Menu");
         this.setResizable(false);
-        component = new Menu();
+        component = new Menu(this);
         this.add(component, BorderLayout.CENTER);
 
         menu= (Menu) component;

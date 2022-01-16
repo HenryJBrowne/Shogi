@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import Shogigui.Board;
 import Shogigui.Board.Square;
 
-public class Piece {
+public class Piece implements Cloneable {
     private int x;
     private int y;
     private boolean is_white;
@@ -380,5 +380,8 @@ public class Piece {
     public void setDefenders(ArrayList<Piece> Defenders) {
         this.Defenders = Defenders;
     }
-
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
+    }
 }

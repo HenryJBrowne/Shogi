@@ -16,7 +16,7 @@ public class Menu extends JComponent {
     private final String Menu_Images_File_path= "images" + File.separator + "menu" + File.separator;
     private final String Background_Image_File_Path= Menu_Images_File_path + "Background.png";
     private final String Play_Button_File_Path = Menu_Images_File_path + "PlayButton.png";
-    private final String Controls_Button_File_Path = Menu_Images_File_path + "ControlsButton.png";
+    private final String Controls_Button_File_Path = Menu_Images_File_path + "ControlsButton.png"; // ++ change to info button
     private final String Quit_Button_File_Path = Menu_Images_File_path + "QuitButton.png";
     private final String Hints_ButtonON_File_Path = Menu_Images_File_path + "HintsONButton.png";
     private final String Hints_ButtonOFF_File_Path = Menu_Images_File_path + "HintsOffButton.png";
@@ -34,10 +34,12 @@ public class Menu extends JComponent {
     public boolean HintsOn = true;
     public boolean TutorialOn = true;
     
+    MenuFrame Frame;
 
-    public Menu() {
+    public Menu(MenuFrame Frame) {
 
         Menu_Images = new ArrayList<ImageFactory>();
+        this.Frame=Frame;
 
         this.setBackground(new Color(255, 255, 255));
         this.setPreferredSize(new Dimension(1100, 580));
@@ -95,11 +97,8 @@ public class Menu extends JComponent {
 
     private boolean toggle(boolean Setting) {
 
-        if (Setting == true) {
-            return false;
-        } else {
-            return true;
-        }
+        return (Setting == true)?false:true;
+
     }
 
     private MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -119,7 +118,10 @@ public class Menu extends JComponent {
                     // check what button was pressed
 
                     if (image.getFilePath() == Play_Button_File_Path) {
-                        PlayPressed=true;
+                         // visible false...?
+                        Frame.dispose();
+                        BoardFrame boardframe = new BoardFrame(PlayerIsWhite, HintsOn, TutorialOn); //use accessor methods?
+                        boardframe.setVisible(true);
                     }
                     if (image.getFilePath() == Controls_Button_File_Path) {
                         // + + 

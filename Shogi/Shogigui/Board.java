@@ -16,11 +16,12 @@ public class Board extends JComponent {
     private final int Square_Width = 65;
     private ArrayList<Piece> White_Pieces;
     private ArrayList<Piece> Black_Pieces;
+    private ArrayList<Piece> All_Pieces;
 
-    private ArrayList<ImageFactory> Background_Image;
+    private ImageFactory Background_Image;
     private ArrayList<ImageFactory> Static_Images;
     private ArrayList<ImageFactory> Piece_Images; // ++ [use image factory interface...?]
-    private ArrayList<ImageFactory> Tutorial_Images;
+    private ImageFactory Tutorial_Image;
 
     private Piece Active_Piece;
     private Piece Previous_Peice;
@@ -49,6 +50,7 @@ public class Board extends JComponent {
     private final String board_images_file_path = "images" + File.separator + "board" + File.separator;
     private final String background_image_file_path= board_images_file_path + "Background.png";
     private final String red_background_image_file_path= board_images_file_path + "red_background.png";
+    private final String menu_button= board_images_file_path + "menu_button.png";
 
     private final String board_file_path = board_images_file_path + "board.png";
     private final String active_square_file_path = board_images_file_path + "active_square.png";
@@ -60,6 +62,7 @@ public class Board extends JComponent {
     private final String promoted_white_pieces_file_path = white_pieces_file_path + "Promoted" + File.separator;
     private final String promoted_black_pieces_file_path = black_pieces_file_path + "Promoted" + File.separator;
 
+    private final String default_tutorial = board_images_file_path + "controls.png";
     private final String tutorial_white_pieces_file_path = white_pieces_file_path + "Tutorial" + File.separator;
     private final String tutorial_black_pieces_file_path = black_pieces_file_path + "Tutorial" + File.separator;
     private final String promoted_tutorial_white_pieces_file_path = white_pieces_file_path + "Tutorial" + File.separator+ "Promoted" + File.separator;
@@ -71,7 +74,13 @@ public class Board extends JComponent {
 
     private boolean PlayerIsWhite; 
     private boolean HintsOn;
-    private boolean TutorialOn; // ++
+    private boolean TutorialOn; 
+
+    private InGameMenu inGameMenu;
+    private Boolean InGameMenuIsDisplay=false;
+    private ArrayList<ImageFactory> InGameMenu_Images;
+
+    private ArrayList<ArrayList<Piece>> BoardStates;
 
     public class Square {
         public int x;
@@ -150,6 +159,15 @@ public class Board extends JComponent {
         Black_Pieces.add(new Pawn(6, 6, false, "Pawn.png", this, true));
         /*Black_Pieces.add(new Pawn(7, 6, false, "Pawn.png", this, false));
         Black_Pieces.add(new Pawn(8, 6, false, "Pawn.png", this, false));*/
+        
+        All_Pieces.addAll(White_Pieces);
+        All_Pieces.addAll(Black_Pieces);
+
+        try {
+            addBoardState();
+        } catch (CloneNotSupportedException e1) {
+            e1.printStackTrace();
+        }
 
         updateBoardStatus();
 
@@ -161,12 +179,16 @@ public class Board extends JComponent {
         this.HintsOn = HintsOn;
         this.TutorialOn = TutorialOn;
 
-        Background_Image= new ArrayList<ImageFactory>();
         Static_Images = new ArrayList<ImageFactory>();
         Piece_Images = new ArrayList<ImageFactory>();
-        Tutorial_Images = new ArrayList<ImageFactory>();
         White_Pieces = new ArrayList<Piece>();
         Black_Pieces = new ArrayList<Piece>();
+        All_Pieces = new ArrayList<Piece>();
+
+        inGameMenu= new InGameMenu(this);
+        BoardStates= new ArrayList<ArrayList<Piece>>();
+
+        Tutorial_Image = new ImageFactory(default_tutorial, Square_Width * 9, Square_Width * 2.6);
 
         PiecesCheckingWhiteKing = new ArrayList<Piece>();
         PiecesCheckingBlackKing = new ArrayList<Piece>();
@@ -190,11 +212,20 @@ public class Board extends JComponent {
 
         Piece_Images.clear();
         Static_Images.clear();
-        Tutorial_Images.clear();
 
+        Tutorial_Image = (!(checkForCheckMate()||whiteIschecked() || blackIschecked()))?new ImageFactory(default_tutorial, Square_Width * 9, Square_Width * 2.6):null;
+        
         // add background 
 
-        Background_Image.add(new ImageFactory(background_image_file_path, 0, 0));
+        Background_Image= new ImageFactory(background_image_file_path, 0, 0);
+
+        // add menu button
+
+        Static_Images.add(new ImageFactory(menu_button, 14.5*Square_Width, 0.1*Square_Width));
+
+        // add menu if menu button is pressed
+
+        InGameMenu_Images = (InGameMenuIsDisplay)?inGameMenu.getImages():null;
 
         // add board grid
 
@@ -208,16 +239,16 @@ public class Board extends JComponent {
 
             if (TutorialOn && checkForCheckMate()==false){        
                 
-                String tutorial_file_path="";
+                String tutorial_file_path=default_tutorial;
 
                 if (/*PlayerIsWhite &&*/Active_Piece.isWhite()){
-                    tutorial_file_path= (!Active_Piece.is_promoted())?tutorial_white_pieces_file_path:promoted_tutorial_white_pieces_file_path;
+                    tutorial_file_path= (!Active_Piece.is_promoted())?tutorial_white_pieces_file_path+Active_Piece.getFilePath():promoted_tutorial_white_pieces_file_path+Active_Piece.getFilePath();
                 }
                 else if ((/*PlayerIsWhite==false &&*/Active_Piece.isBlack())){
-                    tutorial_file_path= (!Active_Piece.is_promoted())?tutorial_black_pieces_file_path:promoted_tutorial_black_pieces_file_path;
+                    tutorial_file_path= (!Active_Piece.is_promoted())?tutorial_black_pieces_file_path+Active_Piece.getFilePath():promoted_tutorial_black_pieces_file_path+Active_Piece.getFilePath();
                 }
 
-                Tutorial_Images.add(new ImageFactory(tutorial_file_path+Active_Piece.getFilePath(), Square_Width * 9, Square_Width * 2.6));
+                Tutorial_Image= new ImageFactory(tutorial_file_path, Square_Width * 9, Square_Width * 2.6);
             }
         }
 
@@ -225,21 +256,15 @@ public class Board extends JComponent {
 
         String piece_file_path;
 
-        for (Piece piece : White_Pieces) {
+        for (Piece piece : All_Pieces) {
             int COL = piece.getX();
             int ROW = piece.getY();
-
-            piece_file_path= (piece.is_promoted())?promoted_white_pieces_file_path + piece.getFilePath(): white_pieces_file_path + piece.getFilePath();
-
-            Piece_Images.add(new ImageFactory(piece_file_path, Square_Width * COL, Square_Width * ROW));
-        }
-
-        for (Piece piece : Black_Pieces) {
-            int COL = piece.getX();
-            int ROW = piece.getY();
-
-            piece_file_path= (piece.is_promoted())?promoted_black_pieces_file_path + piece.getFilePath():black_pieces_file_path + piece.getFilePath(); 
-
+            if (piece.isWhite()){
+                piece_file_path= (piece.is_promoted())?promoted_white_pieces_file_path + piece.getFilePath(): white_pieces_file_path + piece.getFilePath();
+            }
+            else{
+                piece_file_path= (piece.is_promoted())?promoted_black_pieces_file_path + piece.getFilePath():black_pieces_file_path + piece.getFilePath(); 
+            }
             Piece_Images.add(new ImageFactory(piece_file_path, Square_Width * COL, Square_Width * ROW));
         }
 
@@ -256,9 +281,7 @@ public class Board extends JComponent {
 
         else if (whiteIschecked() || blackIschecked()) {
 
-            Background_Image.clear();
-
-            Background_Image.add(new ImageFactory(red_background_image_file_path, 0, 0));
+            Background_Image= new ImageFactory(red_background_image_file_path, 0, 0);
 
             if (Active_Piece==null && PromotionButtonOn == false){
                 Static_Images.add(new ImageFactory(check_file_path, Square_Width * 9, Square_Width * 2.6));
@@ -342,18 +365,13 @@ public class Board extends JComponent {
 
     public void updateAttackingSquares() {
 
-        ArrayList<Piece> allPieces = new ArrayList<Piece>();
-
-        allPieces.addAll(Black_Pieces);
-        allPieces.addAll(White_Pieces);
-
         blackAttackingSquares = new ArrayList<Square>();
         whiteAttackingSquares = new ArrayList<Square>();
 
         for (int x = 0; x < ROWS; x++) {
             for (int y = 0; y < COLS; y++) {
 
-                for (Piece piece : allPieces) {
+                for (Piece piece : All_Pieces) {
 
                     if (piece.canMove(x, y) && piece.is_captured() == false) {
 
@@ -376,12 +394,7 @@ public class Board extends JComponent {
 
     public void updatePiecesAttackersAndDefenders() {
 
-        ArrayList<Piece> allPieces = new ArrayList<Piece>();
-
-        allPieces.addAll(Black_Pieces);
-        allPieces.addAll(White_Pieces);
-
-        for (Piece piece : allPieces) {
+        for (Piece piece : All_Pieces) {
             piece.setAttackers(new ArrayList<Piece>());
                    piece.setDefenders(new ArrayList<Piece>());
         }
@@ -389,7 +402,7 @@ public class Board extends JComponent {
         for (int x = 0; x < ROWS; x++) {
             for (int y = 0; y < COLS; y++) {
 
-                for (Piece piece : allPieces) {
+                for (Piece piece : All_Pieces) {
 
                     if (piece.canMove(x, y) && piece.is_captured() == false && getPiece(x, y) != null
                             && (getPiece(x, y).isWhite() == piece.isBlack())) {
@@ -412,12 +425,7 @@ public class Board extends JComponent {
   
     private void updateProtectedPieces() {
 
-        ArrayList<Piece> allPieces = new ArrayList<Piece>();
-
-        allPieces.addAll(Black_Pieces);
-        allPieces.addAll(White_Pieces);
-
-        for (Piece piece : allPieces) {
+        for (Piece piece : All_Pieces) {
             if (piece.getDefenders().size() > 0) {
 
                 for (Piece defender : piece.getDefenders()) {
@@ -572,6 +580,13 @@ public class Board extends JComponent {
 
     public void updateBoardStatus() {
 
+        All_Pieces.clear();
+        All_Pieces.addAll(White_Pieces);
+        All_Pieces.addAll(Black_Pieces); // ++ nessessary?
+
+        // set turn
+        whites_turn = (moveCounter % 2 == 1)?false:true;
+        
         updatePiecesBlockingCheck();
         updateAttackingSquares();
         updatePiecesAttackersAndDefenders();
@@ -635,7 +650,7 @@ public class Board extends JComponent {
         return false;
     }
 
-    public ArrayList<Square> getSquaresThatBlockCheck(Piece king) { // ++[is tripple check possible in shogi? can you block a double check?...] test method...
+    public ArrayList<Square> getSquaresThatBlockCheck(Piece king) { // ++ [is tripple check possible in shogi? can you block a double check?...] test method...
 
         ArrayList<Square> blockingSquares = new ArrayList<Square>();
 
@@ -784,8 +799,27 @@ public class Board extends JComponent {
             int Clicked_Column = mouse_X / Square_Width;
             int Clicked_Row = mouse_Y / Square_Width;
 
+            /*
+                                // [testing]
+                                System.out.println("");
+            
+                                for (int x=0; BoardStates.size() > x;x++){
+                                System.out.println("STATES: "+ (getKing(BoardStates.get(x)).getX())+" , " + (getKing(BoardStates.get(x)).getY()));}
+                                System.out.println("moves: " + moveCounter);            */
+
             Piece Clicked_Piece = getPiece(Clicked_Column, Clicked_Row);
 
+            // in game menu
+
+            if (mouse_X > 14.5*Square_Width && mouse_Y< 0.8*Square_Width){
+                InGameMenuIsDisplay=true;
+            }
+
+            if (InGameMenuIsDisplay){
+                inGameMenu.detectButtonPress(mouse_X,mouse_Y);
+            }
+            else{
+                 
             // dont allow move until player chooses to promote or not
             if (PromotionButtonOn != true) {
 
@@ -879,22 +913,28 @@ public class Board extends JComponent {
                         Active_Piece.captured(false);
                     }
 
-                    // end turn, add hints for other players turn and update protected pieces status
+                    // end turn, update move counter and save and update board status
 
                     Active_Piece = null;
 
-                    moveCounter=moveCounter++;
+                    moveCounter=moveCounter+1;  
+                    
 
-                    toggleTurn();
+                    try {
+                        addBoardState();
+                    } catch (CloneNotSupportedException e1) {
+                        e1.printStackTrace();
+                    }
+
+                  
 
                     updateBoardStatus();
-
                 }
 
             } else {
 
                 // detect promote button pressed
-                if (PromotionButtonOn == true && mouse_X > 692 && mouse_X < 992 && mouse_Y > 190 && mouse_Y < 290) {  // ++ fix button entendability
+                if (PromotionButtonOn == true && mouse_X > 692 && mouse_X < 992 && mouse_Y > 190 && mouse_Y < 290) {  // ++ fix button extendability
  
                     Previous_Peice.promote(true);
                     PromotionButtonOn = toggle(PromotionButtonOn);
@@ -902,19 +942,73 @@ public class Board extends JComponent {
                     if (possiblePromotion.contains(Active_Piece)) {
                         possiblePromotion.remove(Active_Piece);
                     }
+
+                    BoardStates.remove(moveCounter-1); // ++ test
+                    try {
+                        addBoardState();
+                    } catch (CloneNotSupportedException e1) {
+                        e1.printStackTrace();
+                    }
+
                     updateBoardStatus();
 
                 }
                 // detect do not promote button pressed
                 if (PromotionButtonOn == true && mouse_X > 692 && mouse_X < 992 && mouse_Y > 297 && mouse_Y < 399) {
                     PromotionButtonOn = toggle(PromotionButtonOn);
+                }
+            }
+        }
+            
+            
+            drawBoard();
 
+        }
+    };
+
+    public void addBoardState() throws CloneNotSupportedException{
+
+        // clone current pieces and return state of board
+
+        ArrayList<Piece> newBoardState= new ArrayList<Piece>();
+
+        for (Piece piece: All_Pieces){
+
+            newBoardState.add((Piece) piece.clone());
+        }
+        
+        BoardStates.add(newBoardState);
+    }
+
+    public void revertLastMove(){ // ++ [fix bug] when user reverts move, moves again and reverts that move...
+
+        if (BoardStates!=null && moveCounter!=0){
+
+            White_Pieces.clear();
+            Black_Pieces.clear();
+
+            // remove latest state
+
+            BoardStates.remove(BoardStates.size()-1); 
+
+            // set pieces to pieces within state before latest state
+        
+            for (Piece piece: (BoardStates.get(BoardStates.size()-1))){
+
+                if (piece.isWhite()){
+                    White_Pieces.add(piece);
+                }
+                else{
+                    Black_Pieces.add(piece);
                 }
             }
 
+            moveCounter=moveCounter-1;
+            
+            updateBoardStatus();
             drawBoard();
         }
-    };
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -922,7 +1016,13 @@ public class Board extends JComponent {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g;
+        addBackground(g2);
         addImages(g2);
+    }
+
+    private void addBackground(Graphics2D g2) {
+
+        Background_Image.drawImage(g2);
 
     }
 
@@ -930,10 +1030,14 @@ public class Board extends JComponent {
 
         ArrayList<ImageFactory> All_Images= new ArrayList<ImageFactory>();
 
-        All_Images.addAll(Background_Image);
         All_Images.addAll(Static_Images);
         All_Images.addAll(Piece_Images);
-        All_Images.addAll(Tutorial_Images);
+        if (TutorialOn && Tutorial_Image!=null){
+            All_Images.add(Tutorial_Image);
+        }
+        if (InGameMenuIsDisplay){
+            All_Images.addAll(InGameMenu_Images);
+        }
 
         for (ImageFactory image : All_Images) {
             image.drawImage(g2);
@@ -945,9 +1049,10 @@ public class Board extends JComponent {
         return (DisplayOn)? false:true;
     }
 
-    private void toggleTurn(){
+    // getters and setters...
 
-        whites_turn= (whites_turn)?false:true;
+    public void closeInGameMenu(){
+        InGameMenuIsDisplay=false;
     }
 
     public Piece getPiece(int x, int y) {
