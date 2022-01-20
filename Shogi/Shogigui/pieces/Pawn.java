@@ -12,6 +12,7 @@ public class Pawn extends Piece {
     public Pawn(int x, int y, boolean is_white, String file_path, Board board,
             boolean is_promoted) {
         super(x, y, is_white, file_path, board, is_promoted);
+        this.value=1;
     }
 
     @Override
@@ -69,6 +70,8 @@ public class Pawn extends Piece {
 
         if (this.is_promoted == false) {
 
+            this.value=1;
+
             // if it is trying to move somewhere not in a straight line forward, more than 1
             // space forward or backwards dont let it
 
@@ -87,6 +90,8 @@ public class Pawn extends Piece {
                 }
             }
         } else {
+
+            this.value=7;
 
             // promoted moves
 

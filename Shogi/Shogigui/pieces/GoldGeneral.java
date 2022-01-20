@@ -7,6 +7,7 @@ public class GoldGeneral extends Piece {
     public GoldGeneral(int x, int y, boolean is_white, String file_path, Board board,
             boolean is_promoted) {
         super(x, y, is_white, file_path, board, is_promoted);
+        this.value=6;
     }
 
     @Override

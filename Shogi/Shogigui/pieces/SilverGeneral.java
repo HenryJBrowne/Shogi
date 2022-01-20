@@ -7,6 +7,7 @@ public class SilverGeneral extends Piece {
     public SilverGeneral(int x, int y, boolean is_white, String file_path, Board board,
             boolean is_promoted) {
         super(x, y, is_white, file_path, board, is_promoted);
+        this.value=5;
     }
 
     @Override
@@ -36,6 +37,8 @@ public class SilverGeneral extends Piece {
 
         if (this.is_promoted() == true) {
 
+            this.value=6;
+
             if (this.isBlack() == true) {
 
                 return (((this.getY() == destination_y + 1 && Math.abs(destination_x - this.getX()) <= 1)
@@ -50,6 +53,9 @@ public class SilverGeneral extends Piece {
                         || (this.getY() == destination_y + 1 && (destination_x == this.getX()))
                         || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1)?true:false;
             }
+        }
+        else{
+            this.value=5;
         }
 
         // only allow the silver general to move if it moves 1 forward in the y and the

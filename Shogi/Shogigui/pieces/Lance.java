@@ -7,6 +7,7 @@ public class Lance extends Piece {
     public Lance(int x, int y, boolean is_white, String file_path, Board board,
             boolean is_promoted) {
         super(x, y, is_white, file_path, board, is_promoted);
+        this.value=3;
     }
 
     @Override
@@ -57,6 +58,8 @@ public class Lance extends Piece {
 
         if (this.is_promoted() == true) {
 
+            this.value=6;
+
             if (this.isBlack() == true) {
 
                 return ((this.getY() == destination_y + 1 && Math.abs(destination_x - this.getX()) <= 1)
@@ -67,6 +70,9 @@ public class Lance extends Piece {
                         || (this.getY() == destination_y + 1 && (destination_x == this.getX()))
                         || this.getY() == destination_y && Math.abs(destination_x - this.getX()) == 1)? true:false;
             }
+        }
+        else{
+            this.value=3;
         }
 
         // if it is trying to move somewhere not in a straight line forward, dont let it

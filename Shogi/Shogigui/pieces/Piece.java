@@ -21,6 +21,10 @@ public class Piece implements Cloneable {
     ArrayList<Piece> Attackers;
     ArrayList<Piece> Defenders;
 
+    ArrayList<Piece> captureWith;
+
+    int value;
+
     public Piece(int x, int y, boolean is_white, String file_path, Board board, boolean is_promoted) {
         this.is_white = is_white;
         this.x = x;
@@ -225,6 +229,19 @@ public class Piece implements Cloneable {
         return direction;
     }
 
+    // get movement range in all direction
+
+    public ArrayList<Board.Square> getMovementRange(){
+
+        // ++
+
+        
+
+        return null;
+    }
+
+    // get movement range in one direction
+
     public ArrayList<Board.Square> getMovementRange(String movementDirection) {
 
         int ChangeInX = 0;
@@ -383,5 +400,17 @@ public class Piece implements Cloneable {
     public Object clone() throws CloneNotSupportedException
     {
         return super.clone();
+    }
+    public int getValue(){
+        return value;
+    }
+    public void resetCaptureWith(){
+        captureWith= new ArrayList<Piece>();
+    }
+    public void addCaptureWith(Piece piece){
+        this.captureWith.add(piece);
+    }
+    public ArrayList<Piece> getCaptureWith(){
+        return captureWith;
     }
 }

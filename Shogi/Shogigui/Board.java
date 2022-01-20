@@ -18,6 +18,9 @@ public class Board extends JComponent {
     private ArrayList<Piece> Black_Pieces;
     private ArrayList<Piece> All_Pieces;
 
+    private ArrayList<Piece>capturablePieces;
+    JLabel capturablePiecesTxtHint;
+
     private ImageFactory Background_Image;
     private ArrayList<ImageFactory> Static_Images;
     private ArrayList<ImageFactory> Piece_Images; // ++ [use image factory interface...?]
@@ -55,6 +58,7 @@ public class Board extends JComponent {
     private final String board_file_path = board_images_file_path + "board.png";
     private final String active_square_file_path = board_images_file_path + "active_square.png";
     private final String good_square_file_path = board_images_file_path + "good_square.png";
+    private final String bad_square_file_path = board_images_file_path + "bad_square.png";
     private final String drop_square_file_path = board_images_file_path + "drop_square.png";
     private final String promote_buttons_file_path = board_images_file_path + "promote_buttons.png";
     private final String white_pieces_file_path = board_images_file_path + "white_pieces" + File.separator;
@@ -193,10 +197,16 @@ public class Board extends JComponent {
         PiecesCheckingWhiteKing = new ArrayList<Piece>();
         PiecesCheckingBlackKing = new ArrayList<Piece>();
 
+        capturablePiecesTxtHint= new JLabel();
+        capturablePiecesTxtHint.setBounds(25,520, 750,200);  
+        capturablePiecesTxtHint.setFont(new Font("Segoe Script", Font.PLAIN, 15));
+        capturablePiecesTxtHint.setForeground(new Color(57, 208, 255));
+
         initPieces();
 
-        this.setBackground(new Color(245, 255, 250));
-        this.setPreferredSize(new Dimension(1100, 580)); // board: 580x580
+        
+        this.setBackground(new Color(0, 0, 0));
+        this.setPreferredSize(new Dimension(1100, 650)); // board: 580x580
         this.setMinimumSize(new Dimension(100, 100));
         this.setMaximumSize(new Dimension(1000, 1000));
 
@@ -212,8 +222,9 @@ public class Board extends JComponent {
 
         Piece_Images.clear();
         Static_Images.clear();
+        this.remove(capturablePiecesTxtHint); 
 
-        Tutorial_Image = (!(checkForCheckMate()||whiteIschecked() || blackIschecked()))?new ImageFactory(default_tutorial, Square_Width * 9, Square_Width * 2.6):null;
+        Tutorial_Image = (!(checkForCheckMate()||whiteIschecked() || blackIschecked()||PromotionButtonOn))?new ImageFactory(default_tutorial, Square_Width * 9, Square_Width * 2.6):null;
         
         // add background 
 
@@ -237,7 +248,7 @@ public class Board extends JComponent {
             Static_Images.add(new ImageFactory(active_square_file_path, Square_Width * Active_Piece.getX(),
                     Square_Width * Active_Piece.getY()));
 
-            if (TutorialOn && checkForCheckMate()==false){        
+            if (TutorialOn && checkForCheckMate()==false && PromotionButtonOn==false){        
                 
                 String tutorial_file_path=default_tutorial;
 
@@ -302,7 +313,8 @@ public class Board extends JComponent {
         // add / update hints (dependent on turn) if player hints were turned on
 
         if (this.HintsOn == true && checkForCheckMate()==false) {
-            if ((whites_turn&&PlayerIsWhite) || ((whites_turn==false&&PlayerIsWhite==false))) {
+            
+            /*if ((whites_turn&&PlayerIsWhite) || ((whites_turn==false&&PlayerIsWhite==false))) {*/  // ++ show hints only when players turn?
 
                 // (if a king is checked) add get out of check hints
 
@@ -339,21 +351,33 @@ public class Board extends JComponent {
                 // ++ [currently hints show every possible capturable piece, not the best piece to capture] 
                 // ++ [change hints so that if their are multiple captureable pieces give user hint to capture most valueable piece]
 
-                else if (getCaptureablePieces() != null) {
+                else if (capturablePieces != null) {
 
-                    for (Piece captureablePiece : getCaptureablePieces()) {
+                    for (Piece captureablePiece : capturablePieces) {
 
-                        Static_Images.add(new ImageFactory(good_square_file_path,
+                        if (((PlayerIsWhite && captureablePiece.isWhite()==false) || (PlayerIsWhite==false && captureablePiece.isWhite()==true)) ){
+
+                            Static_Images.add(new ImageFactory(good_square_file_path,
                                 Square_Width * captureablePiece.getX(), Square_Width * captureablePiece.getY()));
+                        }
+                        
+                        if (((PlayerIsWhite && captureablePiece.isWhite()) || (PlayerIsWhite==false && captureablePiece.isWhite()==false))){
+                                Static_Images.add(new ImageFactory(bad_square_file_path,
+                                    Square_Width * captureablePiece.getX(), Square_Width * captureablePiece.getY()));
+                        }
+                    }
+                    if (InGameMenuIsDisplay==false || PromotionButtonOn==false){
+                        this.add(capturablePiecesTxtHint); 
                     }
                 }
+                
+                //this.remove(capturablePiecesTxtHint); 
 
                 // ++ [if our pieces are capturable hint to the player that these pieces need moving into safety]
 
-
                 // ++ [Create a menu button; this will open menu buttons, where user can return to MENU, REVERT move or QUIT]
 
-            }
+            //}
         }
 
         // add check mate hints 
@@ -576,7 +600,125 @@ public class Board extends JComponent {
         if (getOutOfcheckMoves.isEmpty()) {
             getOutOfcheckMoves = null;
         }
+    }   
+                                             
+    private void updateCaptureablePieces() {       // [BUG] does show capturable pieces at start of game  // ++ make more efficiant    // ++ test
+        
+        capturablePieces = new ArrayList<Piece>();
+
+        // check for capturable pieces, add to list and update Jlabel text accordingly
+
+        for (int x = 0; x < ROWS; x++) {
+            for (int y = 0; y < COLS; y++) {
+
+                // check if piece is unprotected and can be captured 
+                if (getPiece(x, y) != null) {
+
+                    getPiece(x, y).resetCaptureWith();
+                    
+                    if (getPiece(x, y).getAttackers().size() >0 && getPiece(x, y).is_protected()==false){
+                            
+                        capturablePieces.add(getPiece(x, y));
+
+                    }
+                    // check if lower value piece can capture highter value piece
+
+                    else if((getPiece(x, y).getAttackers().size()>0)){
+
+                        for (Piece attacker : getPiece(x,y).getAttackers()){
+
+                            if (attacker.getValue()<getPiece(x, y).getValue()){
+                                
+                                capturablePieces.add(getPiece(x, y));
+
+                                getPiece(x, y).addCaptureWith(attacker);
+                            }
+                        }
+                    }
+                    // calculate capturable pieces depending on exchanges of pieces dependent on piece value
+
+                    else if ((getPiece(x, y).getAttackers().size() > getPiece(x, y).getDefenders().size()) && getPiece(x, y).getDefenders().size()>0){
+
+                        for (Piece attacker : getPiece(x,y).getAttackers()){
+
+                            if (attacker.getValue()<=getPiece(x, y).getValue()){
+                                
+                                capturablePieces.add(getPiece(x, y));
+
+                                getPiece(x, y).addCaptureWith(attacker);
+
+                            }
+                        }   
+                    }
+                }
+            }
+        }
+
+        if (capturablePieces.isEmpty()) {
+            capturablePieces = null;
+        }
+        else{
+            updateCaptureableTXT();
+        }
     }
+
+    public void updateCaptureableTXT(){
+
+        String capturablePiecesTxt= "";  
+        String capture="CAPTURE: ";
+        String captureWith;
+        String protect=" <br/> PROTECT :";
+        String protectFrom;
+          
+        for (Piece capturablePiece: capturablePieces){
+
+            if ((capturablePiece.isWhite()&&PlayerIsWhite) || (capturablePiece.isWhite()==false&&PlayerIsWhite==false)){
+                protect = protect + " (" + capturablePiece.getX() + " , " + capturablePiece.getY() + " ) ";
+
+                protectFrom=" from: ";
+                for (Piece attacker: capturablePiece.getAttackers()){
+
+                    protectFrom= protectFrom + " ( " + attacker.getX() + " , " + attacker.getY()+" ), ";
+                }
+                protect = protect + protectFrom;
+            }
+            else{
+                capture = capture+ "         " + " (" + capturablePiece.getX() + " , " + capturablePiece.getY() + " ) ";
+
+                captureWith = " with: ";
+                if (capturablePiece.getCaptureWith().isEmpty()==false){
+
+                    for (Piece attacker: capturablePiece.getCaptureWith()){
+
+                        captureWith= captureWith + " ( " + attacker.getX() + " , " + attacker.getY()+" ) ";
+                    }
+            
+                }
+                else{
+                    for (Piece attacker: capturablePiece.getAttackers()){
+
+                        captureWith= captureWith + " ( " + attacker.getX() + " , " + attacker.getY()+" ) ";
+                    }
+                }        
+                capture = capture + captureWith;
+               
+                capture= capture+", " /*+"<br/>"*/;
+                
+            }
+        }
+
+        if  (capture.equals("CAPTURE: ")||protect.equals(" <br/> MOVE :")){
+            capturablePiecesTxt = (capture.equals("CAPTURE: "))?"<html>"+protect+"</html>":"<html>"+capture+"</html>";
+        }
+        else{
+            capturablePiecesTxt= "<html>"+capture+protect+"</html>";
+        }
+        
+        //capturablePiecesTxt = (capturablePiecesTxt.length()>0)?capturablePiecesTxt.substring(0, capturablePiecesTxt.length() -1):""; //remove comma at end of txt
+
+        capturablePiecesTxtHint.setText(capturablePiecesTxt);
+    }
+    
 
     public void updateBoardStatus() {
 
@@ -591,6 +733,7 @@ public class Board extends JComponent {
         updateAttackingSquares();
         updatePiecesAttackersAndDefenders();
         updateProtectedPieces();
+        updateCaptureablePieces();
 
         if (checkForCheck(getKing(White_Pieces))||whites_turn){
             updateGetOutOfCheckMovesAndDrops(White_Pieces);
@@ -668,6 +811,7 @@ public class Board extends JComponent {
                 }   
             }
         }
+        /*
         else if (PiecesCheckingKing.size()==2){
 
             // double check: only add squares to blocking squares if the squares block both of the checking pieces paths to the king 
@@ -682,7 +826,7 @@ public class Board extends JComponent {
                     }
                 }
             }
-        }
+        }*/
 
         if (blockingSquares.isEmpty()) {
             blockingSquares = null;
@@ -749,45 +893,6 @@ public class Board extends JComponent {
             piece.setX(COL);
             piece.setY(ROW);
         }
-    }
-
-    private ArrayList<Piece> getCaptureablePieces() {   // ++ [calculate exchanges to determin capurable piece]
-        ArrayList<Piece> capturablePieces = new ArrayList<Piece>();
-
-        // select the array of pieces/ the colour of pieces that we're checking for
-        // capturable pieces within (depending on player colour)
-
-        ArrayList<Piece> Pieces= (PlayerIsWhite) ?White_Pieces:Black_Pieces;
-
-        for (int x = 0; x < ROWS; x++) {
-            for (int y = 0; y < COLS; y++) {
-
-                // check if square contains piece, if so check pieces colour and and if its
-                // protected, if not protected check if an opposite colour piece can move to
-                // prieces position, if so it is captureable
-
-                if (getPiece(x, y) != null) {
-
-                    if (Pieces.contains(getPiece(x, y)) == false && getPiece(x, y).is_protected() == false) {
-
-                        for (Piece p : Pieces) {
-
-                            if (p.canMove(x, y)) {
-
-                                capturablePieces.add(getPiece(x, y));
-
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (capturablePieces.isEmpty()) {
-            capturablePieces = null;
-        }
-
-        return capturablePieces;
     }
 
     private MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -926,8 +1031,6 @@ public class Board extends JComponent {
                         e1.printStackTrace();
                     }
 
-                  
-
                     updateBoardStatus();
                 }
 
@@ -941,13 +1044,6 @@ public class Board extends JComponent {
 
                     if (possiblePromotion.contains(Active_Piece)) {
                         possiblePromotion.remove(Active_Piece);
-                    }
-
-                    BoardStates.remove(moveCounter-1); // ++ test
-                    try {
-                        addBoardState();
-                    } catch (CloneNotSupportedException e1) {
-                        e1.printStackTrace();
                     }
 
                     updateBoardStatus();
@@ -980,7 +1076,7 @@ public class Board extends JComponent {
         BoardStates.add(newBoardState);
     }
 
-    public void revertLastMove(){ // ++ [fix bug] when user reverts move, moves again and reverts that move...
+    public void revertLastMove(){ // ++ [fix bug] when user reverts move, moves again and reverts that move...  doesnt work when reverting promotion move 
 
         if (BoardStates!=null && moveCounter!=0){
 
@@ -1022,6 +1118,8 @@ public class Board extends JComponent {
 
     private void addBackground(Graphics2D g2) {
 
+        g2.setColor(getBackground());
+        g2.fillRect(0, 0, getWidth(), getHeight());
         Background_Image.drawImage(g2);
 
     }
@@ -1038,7 +1136,7 @@ public class Board extends JComponent {
         if (InGameMenuIsDisplay){
             All_Images.addAll(InGameMenu_Images);
         }
-
+       
         for (ImageFactory image : All_Images) {
             image.drawImage(g2);
         }

@@ -76,6 +76,15 @@ public class King extends Piece {
             }
 
         }
+        // check it cannot move in range of the other king 
+
+        Piece opposingKing= (this.isWhite())? board.getKing(board.getBlackPieces()):board.getKing(board.getWhitePieces());
+
+        // ++ 
+
+        
+
+
         // check if king can move into space to get out of check
 
         if (this.canMove(destination_x, destination_y)) {

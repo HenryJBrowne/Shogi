@@ -7,6 +7,7 @@ public class Knight extends Piece {
     public Knight(int x, int y, boolean is_white, String file_path, Board board,
             boolean is_promoted) {
         super(x, y, is_white, file_path, board, is_promoted);
+        this.value=4;
     }
 
     @Override
@@ -55,6 +56,8 @@ public class Knight extends Piece {
 
         if (this.is_promoted() == false) {
 
+            this.value=4;
+
             // the knight can only move forward
 
             if (this.isBlack() == true) {
@@ -75,6 +78,8 @@ public class Knight extends Piece {
             }
 
         } else {
+
+            this.value=6;
 
             // promoted moves
 
