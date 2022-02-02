@@ -19,13 +19,6 @@ public class Bishop extends Piece {
             return false;
         }
 
-        // if the peice is captured allow it to be dropped anywhere if empty and can
-        // move on next turn
-
-        if (this.canBeDropped(destination_x, destination_y)) {
-            return true;
-        }
-
         // if there is a piece at the destination, and it is our own, dont let us move
         // there
 

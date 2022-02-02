@@ -4,7 +4,7 @@ import Shogigui.Board;
 
 // ++
 // [MAKE SURE PAWN DROP CANNOT CAUSE INSTANT CHECK MATE... 
-// AND PAWN CANNOT BE DROPPED IN SAME COLUMN AS A UN PROMOTED PAWN]
+// AND PAWN CANNOT BE DROPPED IN SAME COLUMN AS A UN PROMOTED PAWN]   <-- ++ test
 // ++
 
 public class Pawn extends Piece {
@@ -28,11 +28,18 @@ public class Pawn extends Piece {
                 if (board.getPiece(destination_x, y) != null) {
                     if (board.getPiece(destination_x, y).getClass().equals(Pawn.class)
                             && (board.getPiece(destination_x, y).isWhite() && this.isWhite()
-                                    || board.getPiece(destination_x, y).isBlack() && this.isBlack())) {
+                                    || board.getPiece(destination_x, y).isBlack() && this.isBlack()) && this.is_promoted==false) {
                         return false;
                     }
                 }
             }
+
+            // dont allow pawn to be dropped if it causes checkmate 
+
+            if (board.isCheckMateMove(this, destination_x, destination_y)){
+                return false;
+            }
+
             return true;
         }
         return false;
@@ -45,14 +52,6 @@ public class Pawn extends Piece {
 
         if (this.moveIsOutOfBounds(destination_x, destination_y)) {
             return false;
-        }
-
-        // if the peice is captured allow it to be dropped anywhere if empty and can
-        // move on next turn (Pawns cannot be dropped on same column as players own
-        // pawns)
-
-        if (this.canBeDropped(destination_x, destination_y)) {
-            return true;
         }
 
         // if there is a piece at the destination, and it is our own, dont let us move

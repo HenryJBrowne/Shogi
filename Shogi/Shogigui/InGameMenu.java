@@ -7,9 +7,6 @@ public class InGameMenu {
 
     private ArrayList<ImageFactory> inGame_Menu_Images;
 
-    private final int Button_Height = 100;
-    private final int Button_Width = 300;
-
     private final String InGame_Menu_Images_File_path = "images" + File.separator + "inGame_menu" + File.separator;
     private final String Background_Image_File_Path = InGame_Menu_Images_File_path + "Background.png";
     private final String Resume_Button_File_Path = InGame_Menu_Images_File_path + "ResumeButton.png";
@@ -18,7 +15,7 @@ public class InGameMenu {
     private final String Quit_Button_File_Path = InGame_Menu_Images_File_path + "QuitButton.png";
     private Board board;
 
-    public InGameMenu(Board board) {
+    public InGameMenu(Board board) {   // ++ extends menu?
 
         this.board = board;
 
@@ -47,8 +44,8 @@ public class InGameMenu {
 
         for (ImageFactory image : inGame_Menu_Images) {
 
-            if (mouse_X > image.getRect().getX() && mouse_X < image.getRect().getX() + Button_Width
-                    && mouse_Y > image.getRect().getY() && mouse_Y < image.getRect().getY() + Button_Height) {
+            if (mouse_X > image.getRect().getX() && mouse_X < image.getRect().getX() + image.getWidth()
+                    && mouse_Y > image.getRect().getY() && mouse_Y < image.getRect().getY() + image.getWidth()) {
 
                 // check what button was pressed
 
@@ -57,6 +54,7 @@ public class InGameMenu {
                 }
                 if (image.getFilePath() == Menu_Button_File_Path) {
                     board.setVisible(false);
+                    board.getBoardFrame().dispose();
                     MenuFrame boardframe = new MenuFrame(); 
                     boardframe.setVisible(true);
                 }

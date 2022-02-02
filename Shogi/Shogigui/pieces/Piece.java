@@ -229,25 +229,90 @@ public class Piece implements Cloneable {
         return direction;
     }
 
-    // get movement range in all direction
+    // get movement range from current position for possible moves
 
     public ArrayList<Board.Square> getMovementRange(){
 
-        // ++
+        ArrayList<Board.Square> movementRange= new ArrayList<Board.Square>();
 
-        
+        for (int x = 0; x < board.getROWS(); x++) {
+            for (int y = 0; y < board.getCOLS(); y++) {
 
-        return null;
+                if (this.canMove(x, y)){
+
+                    movementRange.add(board.new Square(x, y));
+                }
+            }
+        }
+        if (movementRange.isEmpty()){
+            movementRange=null;
+        }
+
+        return movementRange;
     }
 
-    // get movement range in one direction
+    // get movement range from a set position for possible moves 
+    public ArrayList<Board.Square> getMovementRangeFrom(int newX, int newY){
 
-    public ArrayList<Board.Square> getMovementRange(String movementDirection) {
+        int prevX= this.getX();
+        int prevY= this.getY();
+
+        this.setX(newX);
+        this.setY(newY);
+
+        ArrayList<Board.Square> movementRange= new ArrayList<Board.Square>();
+
+        for (int x = 0; x < board.getROWS(); x++) {
+            for (int y = 0; y < board.getCOLS(); y++) {
+
+                if (this.canMove(x, y)){
+
+                    movementRange.add(board.new Square(x, y));
+                }
+            }
+        }
+        if (movementRange.isEmpty()){
+            movementRange=null;
+        }
+
+        this.setX(prevX);
+        this.setY(prevY);
+
+        return movementRange;
+    }
+
+
+    // get movement range in one direction (for possible moves)
+
+    public ArrayList<Board.Square> getPossibleDisplacementRange(int xpos, int ypos, String movementDirection) {
+
+        ArrayList<Board.Square> movementRange= new ArrayList<Board.Square>();
+
+        for (int x = 0; x < board.getROWS(); x++) {
+            for (int y = 0; y < board.getCOLS(); y++) {
+
+                if (this.canMove(x, y) && getMoveDirection(this.getX(), this.getY(), x, y).equals(movementDirection)){
+
+                    movementRange.add(board.new Square(x, y));
+                }
+            }
+        }
+        if (movementRange.isEmpty()){
+            movementRange=null;
+        }
+
+        return movementRange;
+    }
+
+
+    // get movement range in one direction (xray)
+
+    public ArrayList<Board.Square> getMovementRange(int xpos, int ypos, String movementDirection) {
 
         int ChangeInX = 0;
         int ChangeInY = 0;
 
-        Square Square = board.new Square(this.getX(), this.getY());
+        Square Square = board.new Square(xpos, ypos);
 
         ArrayList<Board.Square> Squares = new ArrayList<Board.Square>();
 
@@ -281,6 +346,7 @@ public class Piece implements Cloneable {
             }
 
         }
+
         if (Squares.isEmpty()) {
             Squares = null;
         }
@@ -412,5 +478,12 @@ public class Piece implements Cloneable {
     }
     public ArrayList<Piece> getCaptureWith(){
         return captureWith;
+    }
+
+    public boolean canbedropped(int clicked_Column, int clicked_Row) {
+        return false;
+    }
+    public void setBoard(Board board_){
+        this.board=board_;
     }
 }

@@ -105,7 +105,7 @@ public class King extends Piece {
 
                     String direction = getMoveDirection(p.getX(),p.getY(),this.getX(), this.getY()); // ++ [test] fix efficiancy
 
-                    ArrayList<Board.Square> pMovementRange = p.getMovementRange(direction);
+                    ArrayList<Board.Square> pMovementRange = p.getMovementRange(this.getX(),this.getY(),direction);
 
                     if (pMovementRange != null) {
 

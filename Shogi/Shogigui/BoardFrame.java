@@ -7,21 +7,24 @@ import javax.swing.JFrame;
 public class BoardFrame extends JFrame {
     
     private Component component;
-    private boolean PlayerCol;
-    private boolean HintsOn;
-    private boolean TutorialOn;
     
-    public BoardFrame(boolean PlayerCol, boolean HintsOn, boolean TutorialOn)
+    public BoardFrame(Menu menu, Boolean customBoard)
     {
-        this.PlayerCol=PlayerCol;
-        this.HintsOn=HintsOn;
-        this.TutorialOn=TutorialOn;
 
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setTitle("Shogi");
         this.setResizable(false);
-        component = new Board(this.PlayerCol, this.HintsOn, this.TutorialOn);
+
+        if (!(customBoard)){
+            component = new Board(menu.getPlayerCol(), menu.getHintsOn(), menu.getTutorialOn(),this,menu.getCustomPieces(),menu.getPlayerTurn());
+        }else{
+            CustomBoard custom = new CustomBoard(this,menu);
+            component= (Component) custom;
+        }
+
         this.add(component, BorderLayout.CENTER);
+
+        menu.getMenuFrame().dispose();
         
         this.setLocation(200, 50);
         this.pack();

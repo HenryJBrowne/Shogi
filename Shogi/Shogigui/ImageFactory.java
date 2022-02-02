@@ -4,9 +4,11 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.*;
 import java.io.*;
+import java.util.ArrayList;
+
 import javax.imageio.*;
 
-class ImageFactory { //add interface?     +check with factory class design pattern
+class ImageFactory { //add interface?     ++ check with factory class design pattern
 
     private static Image NULL_IMAGE = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
    
@@ -26,6 +28,10 @@ class ImageFactory { //add interface?     +check with factory class design patte
         g2.drawImage(image, (int) bounds.getMinX(), (int) bounds.getMinY(), (int) bounds.getMaxX(),
                 (int) bounds.getMaxY(),
                 0, 0, image.getWidth(null), image.getHeight(null), null);
+    }
+    public void drawImages(ArrayList<ImageFactory> Images) {
+        
+        // ++
     }
 
     public Image loadImage(String image_file_path) {
@@ -48,5 +54,12 @@ class ImageFactory { //add interface?     +check with factory class design patte
     public String getFilePath()
     {
         return this.image_file_path;
+    }
+    public int getWidth()
+    {
+        return this.image.getWidth(null);
+    }
+    public int getHeight(){
+        return this.image.getHeight(null);
     }
 }

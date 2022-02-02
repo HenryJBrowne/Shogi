@@ -11,22 +11,30 @@ import javax.swing.*;
 public class Board extends JComponent {
 
     private int moveCounter = 0; // ++
-    private boolean whites_turn=true;
+    private boolean whites_turn;
 
-    private final int Square_Width = 65;
-    private ArrayList<Piece> White_Pieces;
-    private ArrayList<Piece> Black_Pieces;
-    private ArrayList<Piece> All_Pieces;
+    public final int Square_Width = 65;
+
+    public ArrayList<Piece> White_Pieces;
+    public ArrayList<Piece> Black_Pieces;
+    public ArrayList<Piece> All_Pieces;
 
     private ArrayList<Piece>capturablePieces;
-    JLabel capturablePiecesTxtHint;
+    private JLabel capturablePiecesTxtHint;
+
+    private ArrayList<Arrow> arrows;
+    private ArrayList<Arrow> getOutOfCheckArrows;
+    private ArrayList<Arrow> checkmateArrows;
 
     private ImageFactory Background_Image;
     private ArrayList<ImageFactory> Static_Images;
     private ArrayList<ImageFactory> Piece_Images; // ++ [use image factory interface...?]
     private ImageFactory Tutorial_Image;
+    private ArrayList<ImageFactory> Arrow_Images;
 
-    private Piece Active_Piece;
+    public ArrayList<ImageFactory> cbImages;
+
+    public Piece Active_Piece;
     private Piece Previous_Peice;
     private ArrayList<Piece> possiblePromotion = new ArrayList<Piece>();
     private boolean PromotionButtonOn = false;
@@ -59,6 +67,7 @@ public class Board extends JComponent {
     private final String active_square_file_path = board_images_file_path + "active_square.png";
     private final String good_square_file_path = board_images_file_path + "good_square.png";
     private final String bad_square_file_path = board_images_file_path + "bad_square.png";
+    private final String checkmate_square_file_path = board_images_file_path + "checkmate_square.png";
     private final String drop_square_file_path = board_images_file_path + "drop_square.png";
     private final String promote_buttons_file_path = board_images_file_path + "promote_buttons.png";
     private final String white_pieces_file_path = board_images_file_path + "white_pieces" + File.separator;
@@ -80,11 +89,18 @@ public class Board extends JComponent {
     private boolean HintsOn;
     private boolean TutorialOn; 
 
-    private InGameMenu inGameMenu;
-    private Boolean InGameMenuIsDisplay=false;
-    private ArrayList<ImageFactory> InGameMenu_Images;
+    public InGameMenu inGameMenu;
+    public Boolean InGameMenuIsDisplay=false;
+    public ArrayList<ImageFactory> InGameMenu_Images;
 
     private ArrayList<ArrayList<Piece>> BoardStates;
+
+    public ArrayList<Square> grid= new ArrayList<Square>();
+
+    private BoardFrame boardFrame;
+
+    private ArrayList<Piece> customPieces;
+
 
     public class Square {
         public int x;
@@ -94,7 +110,43 @@ public class Board extends JComponent {
             this.x = x;
             this.y = y;
         }
+
+        public boolean isContainedWithin(ArrayList<Square> Squares) {
+
+            if (Squares!=null){
+                for (Square square: Squares){
+
+                    if (square.x==this.x&&square.y==this.y){
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
     }
+
+    public void initGrid(){
+
+        for (int x = 0; x < ROWS; x++) {
+            for (int y = 0; y < COLS; y++) {
+                
+                grid.add(new Square(x,y));  // ++
+            }
+        }
+    }
+
+    public Square getSquare(int x,int y){
+
+        for (Square square: grid){
+            if (square.x==x && square.y==y){
+                return square;
+            }
+        }
+        return null;
+    }
+
+    
 
     // ++
     // [move pieces with least moves range to front of list to improve efficiancy
@@ -102,7 +154,9 @@ public class Board extends JComponent {
     // protected pieces...]
     // ++
 
-    private void initPieces() {
+    public void initPieces() {
+
+        if (customPieces==null){
 
         // [testing pieces]
 
@@ -163,9 +217,28 @@ public class Board extends JComponent {
         Black_Pieces.add(new Pawn(6, 6, false, "Pawn.png", this, true));
         /*Black_Pieces.add(new Pawn(7, 6, false, "Pawn.png", this, false));
         Black_Pieces.add(new Pawn(8, 6, false, "Pawn.png", this, false));*/
+
+        Black_Pieces.add(new Rook(8, 6, false, "Rook.png", this, false));
         
         All_Pieces.addAll(White_Pieces);
         All_Pieces.addAll(Black_Pieces);
+        }
+        else{
+            
+            All_Pieces.addAll(customPieces);
+
+            for (Piece piece: All_Pieces){
+
+                piece.setBoard(this);
+
+                if (piece.isWhite()){
+                    White_Pieces.add(piece);
+                }
+                else{
+                    Black_Pieces.add(piece);
+                }
+            }
+        }
 
         try {
             addBoardState();
@@ -177,17 +250,21 @@ public class Board extends JComponent {
 
     }
 
-    public Board(Boolean PlayerIsWhite, Boolean HintsOn, Boolean TutorialOn) {
+    public Board(Boolean PlayerIsWhite, Boolean HintsOn, Boolean TutorialOn, BoardFrame boardFrame, ArrayList<Piece> customPieces, boolean PlayersTurn) {
 
         this.PlayerIsWhite = PlayerIsWhite;
         this.HintsOn = HintsOn;
         this.TutorialOn = TutorialOn;
+        this.boardFrame=boardFrame;
+        this.customPieces=customPieces;
 
-        Static_Images = new ArrayList<ImageFactory>();
-        Piece_Images = new ArrayList<ImageFactory>();
+        moveCounter=(PlayersTurn)?2:1;  // ++ with customize menu add custom move count
+
         White_Pieces = new ArrayList<Piece>();
         Black_Pieces = new ArrayList<Piece>();
         All_Pieces = new ArrayList<Piece>();
+
+        initGrid();
 
         inGameMenu= new InGameMenu(this);
         BoardStates= new ArrayList<ArrayList<Piece>>();
@@ -204,13 +281,13 @@ public class Board extends JComponent {
 
         initPieces();
 
-        
         this.setBackground(new Color(0, 0, 0));
-        this.setPreferredSize(new Dimension(1100, 650)); // board: 580x580
+        //this.setPreferredSize(new Dimension(1100, 650)); // to use capturetxt
+        this.setPreferredSize(new Dimension(1100, 580));// board: 580x580
         this.setMinimumSize(new Dimension(100, 100));
         this.setMaximumSize(new Dimension(1000, 1000));
 
-        this.addMouseListener(mouseAdapter);
+        this.addMouseListener(new MouseListener(this));
 
         this.setVisible(true);
         this.requestFocus();
@@ -218,10 +295,13 @@ public class Board extends JComponent {
         drawBoard();
     }
 
-    private void drawBoard() {
+    public void drawBoard() {
 
-        Piece_Images.clear();
-        Static_Images.clear();
+        
+        Static_Images = new ArrayList<ImageFactory>();
+        Piece_Images = new ArrayList<ImageFactory>();
+        Arrow_Images= new ArrayList<ImageFactory>();
+        
         this.remove(capturablePiecesTxtHint); 
 
         Tutorial_Image = (!(checkForCheckMate()||whiteIschecked() || blackIschecked()||PromotionButtonOn))?new ImageFactory(default_tutorial, Square_Width * 9, Square_Width * 2.6):null;
@@ -310,7 +390,7 @@ public class Board extends JComponent {
 
         // ADD HINTS / ASSISTS
 
-        // add / update hints (dependent on turn) if player hints were turned on
+        // add / update hints (if player hints are turned on)
 
         if (this.HintsOn == true && checkForCheckMate()==false) {
             
@@ -318,7 +398,7 @@ public class Board extends JComponent {
 
                 // (if a king is checked) add get out of check hints
 
-                if (whiteIschecked() || blackIschecked()) {
+                if ((whiteIschecked() && PlayerIsWhite) || (blackIschecked() && PlayerIsWhite==false)) {
 
                     // ++ [currently hints show every possible moves out of check, not best moves] 
                     // ++ [change get out of check hints so that if king can move out of check this 
@@ -336,6 +416,11 @@ public class Board extends JComponent {
                             Static_Images.add(new ImageFactory(good_square_file_path,
                                     Square_Width * moveSquare.x, Square_Width * moveSquare.y));
                         }
+                        for (Arrow arrow: getOutOfCheckArrows){
+                            Arrow_Images.add(new ImageFactory(arrow.getFilePath(),
+                                Square_Width * arrow.getX(), Square_Width * arrow.getY()));
+                        }
+
                     }
 
                     if (getOutOfCheckDrops != null) {
@@ -369,15 +454,25 @@ public class Board extends JComponent {
                     if (InGameMenuIsDisplay==false || PromotionButtonOn==false){
                         this.add(capturablePiecesTxtHint); 
                     }
+
+                    for (Arrow arrow: arrows){
+            
+                        Arrow_Images.add(new ImageFactory(arrow.getFilePath(),
+                            Square_Width * arrow.getX(), Square_Width * arrow.getY()));
+                    }
                 }
-                
-                //this.remove(capturablePiecesTxtHint); 
+                boolean possibleCheckMate= (PlayerIsWhite)?checkForCheckMateMoves(White_Pieces):checkForCheckMateMoves(Black_Pieces);
 
-                // ++ [if our pieces are capturable hint to the player that these pieces need moving into safety]
-
-                // ++ [Create a menu button; this will open menu buttons, where user can return to MENU, REVERT move or QUIT]
-
-            //}
+                if (possibleCheckMate){
+                    for (Square checkMateSquare: checkMateMoves){       // ++ show user potential check mates moves against them
+                        Static_Images.add(new ImageFactory(checkmate_square_file_path,
+                            Square_Width * checkMateSquare.x, Square_Width * checkMateSquare.y));
+                    }
+                    for (Arrow arrow: checkmateArrows){
+                        Arrow_Images.add(new ImageFactory(arrow.getFilePath(),
+                            Square_Width * arrow.getX(), Square_Width * arrow.getY()));
+                    }
+                }
         }
 
         // add check mate hints 
@@ -400,14 +495,15 @@ public class Board extends JComponent {
                     if (piece.canMove(x, y) && piece.is_captured() == false) {
 
                         if (piece.isWhite()) {
-                            whiteAttackingSquares.add(new Square(x, y));
+                            whiteAttackingSquares.add(getSquare(x, y));
                         } else {
-                            blackAttackingSquares.add(new Square(x, y));
+                            blackAttackingSquares.add(getSquare(x, y));
                         }
                     }
                 }
             }
         }
+
         if (blackAttackingSquares.isEmpty()) {
             blackAttackingSquares = null;
         }
@@ -485,9 +581,9 @@ public class Board extends JComponent {
 
             for (Piece attackerDefender : attacker.getDefenders()) {
 
-                if (attackerDefender.getMovementRange(direction) != null) {
+                if (attackerDefender.getMovementRange(attackerDefender.getX(),attackerDefender.getY(),direction) != null) {
 
-                    for (Square Square : attackerDefender.getMovementRange(direction)) {
+                    for (Square Square : attackerDefender.getMovementRange(attackerDefender.getX(),attackerDefender.getY(),direction)) {
 
                         if (piece.getX() == Square.x && piece.getY() == Square.y) {
                             return false;
@@ -529,7 +625,7 @@ public class Board extends JComponent {
 
                 String movementDirection = Piece.getMoveDirection(opposingPiece.getX(),opposingPiece.getY(),kingCoord.x, kingCoord.y);
 
-                ArrayList<Square> pMovementRange = opposingPiece.getMovementRange(movementDirection);
+                ArrayList<Square> pMovementRange = opposingPiece.getMovementRange(opposingPiece.getX(),opposingPiece.getY(),movementDirection);
 
                 boolean kingInPath = false;
 
@@ -577,6 +673,8 @@ public class Board extends JComponent {
         getOutOfcheckMoves = new ArrayList<Square>();
         getOutOfCheckDrops = new ArrayList<Square>();
 
+        getOutOfCheckArrows = new ArrayList<Arrow>();
+
         for (Piece piece : pieces) {
 
             for (int x = 0; x < ROWS; x++) {
@@ -589,6 +687,8 @@ public class Board extends JComponent {
                     if (piece.canMoveToStopCheck(x, y) && piece.canMove(x, y)) {
 
                         getOutOfcheckMoves.add(new Square(x, y));
+
+                        getOutOfCheckArrows.add(new Arrow(Piece.getMoveDirection(piece.getX(), piece.getY(), x, y), piece.getX(), piece.getY(), "black"));
                     }
                 }
             }
@@ -602,9 +702,9 @@ public class Board extends JComponent {
         }
     }   
                                              
-    private void updateCaptureablePieces() {       // [BUG] does show capturable pieces at start of game  // ++ make more efficiant    // ++ test
+    private void updateCaptureablePieces() {       // [BUG] doesnt show capturable pieces at start of game  // ++ make more efficiant and optimize   // ++ test  // ++ remove duplicate capturable squares?
         
-        capturablePieces = new ArrayList<Piece>();
+        capturablePieces = new ArrayList<Piece>();              // ++ check xray defeners and attackers, depth 2 
 
         // check for capturable pieces, add to list and update Jlabel text accordingly
 
@@ -621,9 +721,9 @@ public class Board extends JComponent {
                         capturablePieces.add(getPiece(x, y));
 
                     }
-                    // check if lower value piece can capture highter value piece
+                    // check if lower value piece can capture highter value piece (sacrafice)
 
-                    else if((getPiece(x, y).getAttackers().size()>0)){
+                    if((getPiece(x, y).getAttackers().size()>0)){
 
                         for (Piece attacker : getPiece(x,y).getAttackers()){
 
@@ -635,9 +735,37 @@ public class Board extends JComponent {
                             }
                         }
                     }
-                    // calculate capturable pieces depending on exchanges of pieces dependent on piece value
+                    // calculate capturable pieces depending on exchanges of pieces dependent on piece value    
 
-                    else if ((getPiece(x, y).getAttackers().size() > getPiece(x, y).getDefenders().size()) && getPiece(x, y).getDefenders().size()>0){
+                    // (xray defenders and attackers (depth 1))
+
+                    Square square= new Square(x,y);
+
+                    int xRayAttackers=0;
+
+                    for(Piece piece:getPiece(x, y).getAttackers()){
+
+                        for (Piece piece2:piece.getDefenders()){
+                            
+                            if ((getPiece(x, y).getDefenders().contains(piece2)==false) && piece2.getMovementRange(x, y, Piece.getMoveDirection(piece2.getX(), piece2.getY(), x, y))!=null && square.isContainedWithin(piece2.getMovementRange(piece2.getX(), piece2.getY(), Piece.getMoveDirection(piece2.getX(), piece2.getY(), x, y)))){
+                                xRayAttackers=xRayAttackers+1;
+                            }
+                        }
+                    }
+
+                    int xRayDefeners=0;
+
+                    for(Piece piece:getPiece(x, y).getDefenders()){
+
+                        for (Piece piece2:piece.getDefenders()){
+                            
+                            if ((getPiece(x, y).getDefenders().contains(piece2)==false) && piece2.getMovementRange(x, y, Piece.getMoveDirection(piece2.getX(), piece2.getY(), x, y))!=null && square.isContainedWithin(piece2.getMovementRange(piece2.getX(), piece2.getY(), Piece.getMoveDirection(piece2.getX(), piece2.getY(), x, y)))){
+                                xRayDefeners=xRayDefeners+1;
+                            }
+                        }
+                    }
+
+                    if ((getPiece(x, y).getAttackers().size() + xRayAttackers > getPiece(x, y).getDefenders().size() + xRayDefeners) && getPiece(x, y).getDefenders().size() + xRayDefeners > 0){
 
                         for (Piece attacker : getPiece(x,y).getAttackers()){
 
@@ -659,10 +787,11 @@ public class Board extends JComponent {
         }
         else{
             updateCaptureableTXT();
+            updateCaptureableArrowHints();
         }
     }
 
-    public void updateCaptureableTXT(){
+    public void updateCaptureableTXT(){  // ++ [remove or make more readable/ user friendly]  ++ chnage number coordinates to letters 
 
         String capturablePiecesTxt= "";  
         String capture="CAPTURE: ";
@@ -718,6 +847,104 @@ public class Board extends JComponent {
 
         capturablePiecesTxtHint.setText(capturablePiecesTxt);
     }
+
+
+    public void updateCaptureableArrowHints(){ 
+
+        arrows= new ArrayList<Arrow>();
+          
+        for (Piece capturablePiece: capturablePieces){
+
+            // add arrows (valid moves) to pieces to possible moves away from opposing piece 
+
+            if ((capturablePiece.isWhite()&&PlayerIsWhite) || (capturablePiece.isWhite()==false&&PlayerIsWhite==false)){
+ 
+                for (Piece attacker: capturablePiece.getAttackers()){
+
+                    String DirectionTowardAttacker="";
+                    String DirectionAwayAttacker="";
+                    
+                    ArrayList<String> allDirections= new ArrayList<String>();
+                    allDirections.add("N"); allDirections.add("NE"); allDirections.add("NW"); allDirections.add("S"); allDirections.add("SE"); allDirections.add("SW"); allDirections.add("W"); allDirections.add("E");
+
+                    DirectionTowardAttacker= Piece.getMoveDirection(capturablePiece.getX(), capturablePiece.getY(),attacker.getX(), attacker.getY());
+                    DirectionAwayAttacker= Piece.getMoveDirection(attacker.getX(), attacker.getY(), capturablePiece.getX(), capturablePiece.getY());
+
+                    if (attacker.getClass()==Rook.class || attacker.getClass()==Lance.class || attacker.getClass()==Bishop.class){  // ++ [fix extendability -for ranged pieces]
+
+                        allDirections.remove(DirectionTowardAttacker);
+                        allDirections.remove(DirectionAwayAttacker);
+                    }
+                    else{
+                        allDirections.remove(DirectionTowardAttacker);
+                    }
+
+                    for (String Direction: allDirections){
+                    
+                        if (capturablePiece.getPossibleDisplacementRange(capturablePiece.getX(), capturablePiece.getY(), Direction)!=null){
+
+                            // check move in direction is safe
+
+                            boolean moveIsSafe=true;
+
+                            for (Square possibleMove : capturablePiece.getPossibleDisplacementRange(capturablePiece.getX(), capturablePiece.getY(), Direction)){
+                                
+                                int currPosX= capturablePiece.getX();
+                                int currPosY= capturablePiece.getY();
+
+                                capturablePiece.setX(possibleMove.x);
+                                capturablePiece.setY(possibleMove.y);
+
+                                updatePiecesAttackersAndDefenders();
+
+                                if (capturablePiece.getAttackers().size() > capturablePiece.getDefenders().size()){
+
+                                    moveIsSafe=false;
+                                }
+                                else{
+
+                                    moveIsSafe=true;
+
+                                    for (Piece Attacker: capturablePiece.getAttackers()){
+                                        if (Attacker.getValue()<=capturablePiece.getValue()){
+                                            moveIsSafe=false;
+                                        }
+                                    }
+                                }
+
+                                capturablePiece.setX(currPosX);
+                                capturablePiece.setY(currPosY);
+
+                                updatePiecesAttackersAndDefenders();
+
+                            }
+                            if (moveIsSafe){
+                                arrows.add(new Arrow(Direction,capturablePiece.getX(),capturablePiece.getY(), "black"));
+                            }
+                        }
+                    }   
+                }
+
+            }
+            else{
+                // add arrows to pieces toward possible opposing piece capture 
+
+                if (capturablePiece.getCaptureWith().isEmpty()==false){
+
+                    for (Piece attacker: capturablePiece.getCaptureWith()){
+
+                        arrows.add(new Arrow(Piece.getMoveDirection(attacker.getX(), attacker.getY(), capturablePiece.getX(), capturablePiece.getY()),attacker.getX(),attacker.getY(),"green"));
+                    }
+                }
+                else{
+                    for (Piece attacker: capturablePiece.getAttackers()){
+
+                        arrows.add(new Arrow(Piece.getMoveDirection(attacker.getX(), attacker.getY(), capturablePiece.getX(), capturablePiece.getY()),attacker.getX(),attacker.getY(),"green"));
+                    }
+                }        
+            }
+        }
+    }
     
 
     public void updateBoardStatus() {
@@ -730,15 +957,15 @@ public class Board extends JComponent {
         whites_turn = (moveCounter % 2 == 1)?false:true;
         
         updatePiecesBlockingCheck();
-        updateAttackingSquares();
+        updateAttackingSquares();               // <- ++ fix method?
         updatePiecesAttackersAndDefenders();
         updateProtectedPieces();
         updateCaptureablePieces();
 
-        if (checkForCheck(getKing(White_Pieces))||whites_turn){
+        if (checkForCheck(getKing(White_Pieces))/*||whites_turn*/){
             updateGetOutOfCheckMovesAndDrops(White_Pieces);
         }
-        else if (checkForCheck(getKing(Black_Pieces))||whites_turn==false){
+        else if (checkForCheck(getKing(Black_Pieces))/*||whites_turn==false*/){
             updateGetOutOfCheckMovesAndDrops(Black_Pieces);
         }
     }
@@ -757,7 +984,7 @@ public class Board extends JComponent {
         ArrayList<Piece>Pieces =(king.isWhite())? Black_Pieces:White_Pieces;
 
         for (Piece piece : Pieces) {
-            if (piece.canMove(king.getX(), king.getY())) {
+            if (piece.canMove(king.getX(), king.getY())&& piece.is_captured()==false) {
 
                 if (king.isWhite()) {
                     PiecesCheckingWhiteKing.add(piece);
@@ -781,16 +1008,141 @@ public class Board extends JComponent {
         return ((getOutOfcheckMoves==null) && (whiteIschecked() || blackIschecked()))?true:false;
     }
 
-    public boolean checkForCheckMateMoves() {
+                                                                            // ++ TEST 
+    public boolean checkForCheckMateMoves(ArrayList<Piece> pieces) {  //++ add promotion checkmates 
 
-        checkMateMoves = new ArrayList<Square>();   // getOutOfcheckMoves = squares king can move
+        checkMateMoves = new ArrayList<Square>();   
+        checkmateArrows= new ArrayList<Arrow>();                // check if piece that blocks checkmate can be taken resulting in next move checkmate
 
-            //for all possible moves, check if the kings possible moves are in the movement range of that move, if so and cannot be blocked add to list...
+
+        if (getOpposingKing(pieces).getMovementRange()==null || getOpposingKing(pieces).getMovementRange().size()<=4){ // check if a move can block more than 4 king moves and check for check mate?
+
+            for (Piece piece: pieces){
+
+                if (piece.getMovementRange()!=null){         
+
+                    for (Square possibleMove: piece.getMovementRange()){
+
+                        if (isCheckMateMove(piece, possibleMove.x,possibleMove.y) && !(piece.getClass()==Pawn.class && piece.is_captured())){  //check pawn is not being dropped into checkmate  ++ fix extendability
+                            checkMateMoves.add(possibleMove);
+                            checkmateArrows.add(new Arrow(Piece.getMoveDirection(piece.getX(), piece.getY(), possibleMove.x, possibleMove.y),piece.getX(),piece.getY(),"gold")); // change to gold arrow
+                        }
+                    }
+                }
+            }
+        }
+
+        if (checkMateMoves.isEmpty()){
+            checkMateMoves=null;
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
+    public boolean isCheckMateMove(Piece piece, int x, int y){
+
+        boolean isCheckMateMove;
+
+        int currentXPos= piece.getX();
+        int currentYPos= piece.getY();
+
+        Piece king;
+        ArrayList<Square> defendingSquares;
+  
+        if (piece.isBlack()){
+            king= getKing(White_Pieces);
+            defendingSquares= whiteAttackingSquares;
+        }
+        else{
+            king= getKing(Black_Pieces);
+            defendingSquares= blackAttackingSquares;
+        }
         
-        // ++ [...]
+        boolean moveIsSafe=false;
 
+        if (getPiece(x,y)!=null && ((piece.isWhite()&&getPiece(x, y).isBlack())||(piece.isBlack()&&getPiece(x , y).isWhite()))){
 
-        return false;
+            int Defenders=0;
+
+            for (Square defendingSquare: defendingSquares){
+
+                if (defendingSquare.x==x && defendingSquare.y==y){
+                    Defenders=Defenders+1;
+                }
+                if (Defenders>1){
+                    moveIsSafe=true;
+                    break;
+                }
+            }
+        }
+        else{
+            moveIsSafe=true;
+        }
+
+        // xray
+
+        for (Piece protector: piece.getDefenders()){
+
+            if (protector.getMovementRange(protector.getX(), protector.getY(), Piece.getMoveDirection(protector.getX(), protector.getY(), king.getX(), king.getY()))!=null){
+
+                for (Square square: protector.getMovementRange(protector.getX(), protector.getY(), Piece.getMoveDirection(protector.getX(), protector.getY(), king.getX(), king.getY()))){
+
+                    if (square.x==x && square.y==y){
+                        moveIsSafe=true;
+                    }
+                }
+            }
+        }
+
+        piece.setX(x);
+        piece.setY(y);
+
+        boolean moveIsAdrop=false;
+
+        if (piece.is_captured()){ // ++ test
+            piece.captured(false);
+            moveIsAdrop=true;
+        }
+
+        updateBoardStatus();
+
+        if (checkForCheckMate() &&  moveIsSafe && !(x==king.getX() && y==king.getY())){
+            isCheckMateMove=true;
+        }
+        else{
+            isCheckMateMove=false;
+        }
+
+        piece.setX(currentXPos);
+        piece.setY(currentYPos);
+
+        if (moveIsAdrop){
+            piece.captured(true);
+        }
+
+        updateBoardStatus();
+
+        return isCheckMateMove;
+
+    }
+
+    // removes duplicate squares from square array 
+    public ArrayList<Square> removeDups(ArrayList<Square> Squares){
+
+        ArrayList<Square> newSquares= new ArrayList<Square>();
+        ArrayList<Square> tempSquares= new ArrayList<Square>();
+
+        for (Square square: Squares){
+            newSquares.add(getSquare(square.x, square.y));
+        }
+        for (Square square: newSquares){
+            if (tempSquares.contains(square)==false){
+                tempSquares.add(getSquare(square.x, square.y));
+            }
+        }
+        return tempSquares;                  
     }
 
     public ArrayList<Square> getSquaresThatBlockCheck(Piece king) { // ++ [is tripple check possible in shogi? can you block a double check?...] test method...
@@ -895,22 +1247,26 @@ public class Board extends JComponent {
         }
     }
 
-    private MouseAdapter mouseAdapter = new MouseAdapter() {
+    class MouseListener extends MouseAdapter {   // ++ make neater
 
+        Board board;
+    
+        public MouseListener(Board board){
+            this.board=board;
+        }
         @Override
+        public void mousePressed(MouseEvent e) {
+           board.mousePressed(e);
+        }
+    }
+
         public void mousePressed(MouseEvent e) {
             int mouse_X = e.getX();
             int mouse_Y = e.getY();
             int Clicked_Column = mouse_X / Square_Width;
             int Clicked_Row = mouse_Y / Square_Width;
 
-            /*
-                                // [testing]
-                                System.out.println("");
-            
-                                for (int x=0; BoardStates.size() > x;x++){
-                                System.out.println("STATES: "+ (getKing(BoardStates.get(x)).getX())+" , " + (getKing(BoardStates.get(x)).getY()));}
-                                System.out.println("moves: " + moveCounter);            */
+            // ++ fix drops bug?
 
             Piece Clicked_Piece = getPiece(Clicked_Column, Clicked_Row);
 
@@ -997,7 +1353,7 @@ public class Board extends JComponent {
 
                         // if piece is dropped do not allow promotion on same turn
 
-                        if (Active_Piece.is_captured() != true) {
+                        if (Active_Piece.is_captured() == false) {
                             PromotionButtonOn = toggle(PromotionButtonOn);
                         }
                         possiblePromotion.add(Active_Piece);
@@ -1037,7 +1393,7 @@ public class Board extends JComponent {
             } else {
 
                 // detect promote button pressed
-                if (PromotionButtonOn == true && mouse_X > 692 && mouse_X < 992 && mouse_Y > 190 && mouse_Y < 290) {  // ++ fix button extendability
+                if (PromotionButtonOn == true && mouse_X > 692 && mouse_X < 992 && mouse_Y > 190 && mouse_Y < 290) {  // ++ [fix button extendability]
  
                     Previous_Peice.promote(true);
                     PromotionButtonOn = toggle(PromotionButtonOn);
@@ -1060,7 +1416,7 @@ public class Board extends JComponent {
             drawBoard();
 
         }
-    };
+    
 
     public void addBoardState() throws CloneNotSupportedException{
 
@@ -1076,7 +1432,7 @@ public class Board extends JComponent {
         BoardStates.add(newBoardState);
     }
 
-    public void revertLastMove(){ // ++ [fix bug] when user reverts move, moves again and reverts that move...  doesnt work when reverting promotion move 
+    public void revertLastMove(){ // ++ [bug] when user reverts move, moves again and reverts that move...  doesnt work when reverting promotion move 
 
         if (BoardStates!=null && moveCounter!=0){
 
@@ -1130,11 +1486,16 @@ public class Board extends JComponent {
 
         All_Images.addAll(Static_Images);
         All_Images.addAll(Piece_Images);
+        All_Images.addAll(Arrow_Images); 
         if (TutorialOn && Tutorial_Image!=null){
             All_Images.add(Tutorial_Image);
         }
         if (InGameMenuIsDisplay){
             All_Images.addAll(InGameMenu_Images);
+        }
+
+        if (cbImages!=null){
+            All_Images.addAll(cbImages);
         }
        
         for (ImageFactory image : All_Images) {
@@ -1254,5 +1615,17 @@ public class Board extends JComponent {
         }
         return null;
     }
+    public Piece getOpposingKing(ArrayList<Piece> Pieces){
+
+        if (Pieces.equals(White_Pieces)){
+            return getKing(Black_Pieces);
+        }else{
+            return getKing(White_Pieces);
+        }
+    }
+    public BoardFrame getBoardFrame(){
+        return boardFrame;
+    }
 }
+
 
