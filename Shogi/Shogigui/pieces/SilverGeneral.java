@@ -13,16 +13,7 @@ public class SilverGeneral extends Piece {
     @Override
     public boolean canMove(int destination_x, int destination_y) {
 
-        // do not allow the peice to move outside the board
-
-        if (this.moveIsOutOfBounds(destination_x, destination_y)) {
-            return false;
-        }
-
-        // if there is a piece at the destination, and it is our own, dont let us move
-        // there
-
-        if (this.moveIsOnTopOfOwnPiece(destination_x, destination_y)) {
+        if (!(this.isLegalMove(destination_x, destination_y))){
             return false;
         }
 

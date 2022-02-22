@@ -14,6 +14,13 @@ public class Arrow{
     private int y;
     private String col;
 
+    /**
+     * The Arrow constuctor method is used to intilize an arrow object instance 
+     * @param Direction The compass direction where the arrow points 
+     * @param x The location of the arrow position on the grids x axis
+     * @param y The location of the arrow position on the grids y axis
+     * @param col The colour of the arrow (ie black, green, gold)
+     */
     public Arrow(String Direction, int x, int y, String col){
 
         this.Direction=Direction;
@@ -22,15 +29,36 @@ public class Arrow{
         this.col=col;
     }
 
+    /**
+     * getDirection accessor method 
+     * @return The compas direction the arrow is pointing 
+     */
     public String getDirection() {
         return Direction;
     }
+
+    /**
+     * getX accessor method
+     * 
+     * @return location of an arrow position in the board grid on the x axis
+     */
     public int getX() {
         return x;
     }
+
+    /**
+     * getY accessor method
+     * 
+     * @return location of an arrow position in the board grid on the y axis
+     */
     public int getY() {
         return y;
     }
+
+    /**
+     * getFilePath accessor method
+     * @return the file path used to locate the image of the arrow
+     */
     public String getFilePath() {
 
         String directionFilePath="";

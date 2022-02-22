@@ -14,16 +14,7 @@ public class King extends Piece {
     @Override
     public boolean canMove(int destination_x, int destination_y) {
 
-        // do not allow the peice to move outside the board
-
-        if (this.moveIsOutOfBounds(destination_x, destination_y)) {
-            return false;
-        }
-
-        // if there is a piece at the destination, and it is our own, dont let us move
-        // there
-
-        if (this.moveIsOnTopOfOwnPiece(destination_x, destination_y)) {
+        if (!(this.isLegalMove(destination_x, destination_y))){
             return false;
         }
 
@@ -33,7 +24,11 @@ public class King extends Piece {
             return false;
         }
 
-        // dont allow the king to move into space that puts it in check
+        return true;
+    }
+
+    @Override // ++ test
+    public boolean moveChecksOwnKing(int destination_x, int destination_y){
 
         if (this.checking_if_defender == false) { // when checking to see if king is defending piece allow it to move into check
 
@@ -52,13 +47,13 @@ public class King extends Piece {
                             || (board.getPiece(destination_x, destination_y) != null
                                     && board.getPiece(destination_x, destination_y).is_protected)) {
 
-                        return false;
+                        return true;
                     }
 
                 }
             }
         }
-        return true;
+        return false;
     }
 
     @Override
