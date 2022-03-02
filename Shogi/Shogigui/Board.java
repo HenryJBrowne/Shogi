@@ -12,8 +12,6 @@ import javax.swing.*;
  */
 public class Board extends JComponent {
 
-    // initilize variables
-
     private int moveCounter = 0; // ++
     private boolean whites_turn;
 
@@ -22,25 +20,18 @@ public class Board extends JComponent {
     public ArrayList<Piece> White_Pieces;
     public ArrayList<Piece> Black_Pieces;
     public ArrayList<Piece> All_Pieces;
-
-    private ArrayList<Piece> capturablePieces;
-    private JLabel capturablePiecesTxtHint;
-
-    private ArrayList<Arrow> arrows;
-    private ArrayList<Arrow> getOutOfCheckArrows;
-    private ArrayList<Arrow> checkmateArrows;
+    public Piece Active_Piece;
 
     private ImageFactory Background_Image;
     private ArrayList<ImageFactory> Static_Images;
-    private ArrayList<ImageFactory> Piece_Images; // ++ [use image factory interface...?]
-    private ImageFactory Tutorial_Image;
-    private ArrayList<ImageFactory> Arrow_Images;
+    private ArrayList<ImageFactory> Piece_Images;
+    private ArrayList<ImageFactory> AssistedImages;
+    private ArrayList<ImageFactory> Dynamic_Images;
 
     public ArrayList<ImageFactory> cbImages;
 
-    public Piece Active_Piece;
     private Piece Previous_Peice;
-    private ArrayList<Piece> possiblePromotion = new ArrayList<Piece>();
+    private ArrayList<Piece> possiblePromotion;
     private boolean PromotionButtonOn = false;
 
     private final int ROWS = 9;
@@ -60,7 +51,8 @@ public class Board extends JComponent {
     private ArrayList<Square> getOutOfcheckMoves = null;
     private ArrayList<Square> getOutOfCheckDrops = null;
 
-    private ArrayList<Square> checkMateMoves = null; // ++
+    private ArrayList<Piece> getOutOfcheckMovePiece = null;
+    private ArrayList<Piece> getOutOfCheckDropPiece = null;
 
     private final String board_images_file_path = "images" + File.separator + "board" + File.separator;
     private final String background_image_file_path = board_images_file_path + "Background.png";
@@ -69,23 +61,12 @@ public class Board extends JComponent {
 
     private final String board_file_path = board_images_file_path + "board.png";
     private final String active_square_file_path = board_images_file_path + "active_square.png";
-    private final String good_square_file_path = board_images_file_path + "good_square.png";
-    private final String bad_square_file_path = board_images_file_path + "bad_square.png";
-    private final String checkmate_square_file_path = board_images_file_path + "checkmate_square.png";
-    private final String drop_square_file_path = board_images_file_path + "drop_square.png";
+
     private final String promote_buttons_file_path = board_images_file_path + "promote_buttons.png";
     private final String white_pieces_file_path = board_images_file_path + "white_pieces" + File.separator;
     private final String black_pieces_file_path = board_images_file_path + "black_pieces" + File.separator;
     private final String promoted_white_pieces_file_path = white_pieces_file_path + "Promoted" + File.separator;
     private final String promoted_black_pieces_file_path = black_pieces_file_path + "Promoted" + File.separator;
-
-    private final String default_tutorial = board_images_file_path + "controls.png";
-    private final String tutorial_white_pieces_file_path = white_pieces_file_path + "Tutorial" + File.separator;
-    private final String tutorial_black_pieces_file_path = black_pieces_file_path + "Tutorial" + File.separator;
-    private final String promoted_tutorial_white_pieces_file_path = white_pieces_file_path + "Tutorial" + File.separator
-            + "Promoted" + File.separator;
-    private final String promoted_tutorial_black_pieces_file_path = black_pieces_file_path + "Tutorial" + File.separator
-            + "Promoted" + File.separator;
 
     private final String check_file_path = board_images_file_path + "Check.png";
     private final String white_checkmate_file_path = board_images_file_path + "white_check_mate.png";
@@ -97,11 +78,10 @@ public class Board extends JComponent {
 
     public InGameMenu inGameMenu;
     public Boolean InGameMenuIsDisplay = false;
-    public ArrayList<ImageFactory> InGameMenu_Images;
 
     private ArrayList<ArrayList<Piece>> BoardStates;
 
-    public ArrayList<Square> grid = new ArrayList<Square>();
+    private ArrayList<Square> grid;
 
     private BoardFrame boardFrame;
 
@@ -147,29 +127,14 @@ public class Board extends JComponent {
      */
     public void initGrid() {
 
+        grid = new ArrayList<Square>();
+
         for (int x = 0; x < ROWS; x++) {
             for (int y = 0; y < COLS; y++) {
 
                 grid.add(new Square(x, y)); // ++
             }
         }
-    }
-
-    /**
-     * The getSquare accessor method returns the square within the grid at the
-     * coordinate given as parmeters
-     * 
-     * @param x the location of the square on the x axis
-     * @param y the location of the square on the y axis
-     */
-    public Square getSquare(int x, int y) {
-
-        for (Square square : grid) {
-            if (square.x == x && square.y == y) {
-                return square;
-            }
-        }
-        return null;
     }
 
     // ++
@@ -187,54 +152,139 @@ public class Board extends JComponent {
 
         if (customPieces == null) {
 
-            // populate lists of pieces for default shogi layout
+            // populate lists of pieces for default shogi game layout
+            /*
+             * White_Pieces.add(new King(4, 0, true, "King.png", this, false));
+             * White_Pieces.add(new Lance(0, 0, true, "Lance.png", this, false));
+             * White_Pieces.add(new Lance(8, 0, true, "Lance.png", this, false));
+             * White_Pieces.add(new Knight(1, 0, true, "Knight.png", this, false));
+             * White_Pieces.add(new Knight(7, 0, true, "Knight.png", this, false));
+             * White_Pieces.add(new SilverGeneral(2, 0, true, "SilverGeneral.png", this,
+             * false));
+             * White_Pieces.add(new SilverGeneral(6, 0, true, "SilverGeneral.png", this,
+             * false));
+             * White_Pieces.add(new GoldGeneral(3, 0, true, "GoldGeneral.png", this,
+             * false));
+             * White_Pieces.add(new GoldGeneral(5, 0, true, "GoldGeneral.png", this,
+             * false));
+             * White_Pieces.add(new Bishop(7, 1, true, "Bishop.png", this, false));
+             * White_Pieces.add(new Rook(1, 1, true, "Rook.png", this, false));
+             * White_Pieces.add(new Pawn(0, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(1, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(2, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(3, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(4, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(5, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(6, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(7, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(8, 2, true, "Pawn.png", this, false));
+             * Black_Pieces.add(new King(4, 8, false, "King.png", this, false));
+             * Black_Pieces.add(new Lance(0, 8, false, "Lance.png", this, false));
+             * Black_Pieces.add(new Lance(8, 8, false, "Lance.png", this, false));
+             * Black_Pieces.add(new Knight(1, 8, false, "Knight.png", this, false));
+             * Black_Pieces.add(new Knight(7, 8, false, "Knight.png", this, false));
+             * Black_Pieces.add(new SilverGeneral(2, 8, false, "SilverGeneral.png", this,
+             * false));
+             * Black_Pieces.add(new SilverGeneral(6, 8, false, "SilverGeneral.png", this,
+             * false));
+             * Black_Pieces.add(new GoldGeneral(3, 8, false, "GoldGeneral.png", this,
+             * false));
+             * Black_Pieces.add(new GoldGeneral(5, 8, false, "GoldGeneral.png", this,
+             * false));
+             * Black_Pieces.add(new Bishop(1, 7, false, "Bishop.png", this, false));
+             * Black_Pieces.add(new Rook(7, 7, false, "Rook.png", this, false));
+             * Black_Pieces.add(new Pawn(0, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(1, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(2, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(3, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(4, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(5, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(6, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(7, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(8, 6, false, "Pawn.png", this, false));
+             */
+
+            // [testing pieces]
 
             White_Pieces.add(new King(5, 4, true, "King.png", this, false));
-            White_Pieces.add(new Lance(0, 0, true, "Lance.png", this, false));
-            White_Pieces.add(new Lance(8, 0, true, "Lance.png", this, false));
-            White_Pieces.add(new Knight(1, 0, true, "Knight.png", this, false));
-            White_Pieces.add(new Knight(7, 0, true, "Knight.png", this, false));
-            White_Pieces.add(new SilverGeneral(2, 0, true, "SilverGeneral.png", this, false));
-            White_Pieces.add(new SilverGeneral(6, 0, true, "SilverGeneral.png", this, false));
-            White_Pieces.add(new GoldGeneral(3, 0, true, "GoldGeneral.png", this, false));
-            White_Pieces.add(new GoldGeneral(5, 0, true, "GoldGeneral.png", this, false));
+
+            /*
+             * White_Pieces.add(new Lance(0, 0, true, "Lance.png", this, false));
+             * White_Pieces.add(new Lance(8, 0, true, "Lance.png", this, false));
+             * 
+             * White_Pieces.add(new Knight(1, 0, true, "Knight.png", this, false));
+             * White_Pieces.add(new Knight(7, 0, true, "Knight.png", this, false));
+             * 
+             * White_Pieces.add(new SilverGeneral(2, 0, true, "SilverGeneral.png", this,
+             * false));
+             * White_Pieces.add(new SilverGeneral(6, 0, true, "SilverGeneral.png", this,
+             * false));
+             * 
+             * White_Pieces.add(new GoldGeneral(3, 0, true, "GoldGeneral.png", this,
+             * false));
+             * White_Pieces.add(new GoldGeneral(5, 0, true, "GoldGeneral.png", this,
+             * false));
+             */
+
             White_Pieces.add(new Bishop(7, 1, true, "Bishop.png", this, false));
             White_Pieces.add(new Rook(1, 1, true, "Rook.png", this, false));
-            White_Pieces.add(new Pawn(0, 2, true, "Pawn.png", this, false));
-            White_Pieces.add(new Pawn(1, 2, true, "Pawn.png", this, false));
-            White_Pieces.add(new Pawn(2, 2, true, "Pawn.png", this, false));
-            White_Pieces.add(new Pawn(3, 2, true, "Pawn.png", this, false));
-            White_Pieces.add(new Pawn(4, 2, true, "Pawn.png", this, false));
+
+            /*
+             * White_Pieces.add(new Pawn(0, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(1, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(2, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(3, 2, true, "Pawn.png", this, false));
+             * White_Pieces.add(new Pawn(4, 2, true, "Pawn.png", this, false));
+             */
             White_Pieces.add(new Pawn(5, 2, true, "Pawn.png", this, true));
+
             White_Pieces.add(new Pawn(6, 2, true, "Pawn.png", this, true));
             White_Pieces.add(new Pawn(7, 2, true, "Pawn.png", this, true));
             White_Pieces.add(new Pawn(8, 2, true, "Pawn.png", this, true));
+
             Black_Pieces.add(new King(4, 8, false, "King.png", this, false));
+
             Black_Pieces.add(new Lance(0, 8, false, "Lance.png", this, false));
+
             Black_Pieces.add(new Lance(8, 8, false, "Lance.png", this, false));
+
             Black_Pieces.add(new Knight(1, 8, false, "Knight.png", this, false));
-            Black_Pieces.add(new Knight(7, 8, false, "Knight.png", this, false));
-            Black_Pieces.add(new SilverGeneral(2, 8, false, "SilverGeneral.png", this, false));
-            Black_Pieces.add(new SilverGeneral(6, 8, false, "SilverGeneral.png", this, false));
-            Black_Pieces.add(new GoldGeneral(3, 8, false, "GoldGeneral.png", this, false));
-            Black_Pieces.add(new GoldGeneral(5, 8, false, "GoldGeneral.png", this, false));
+
+            /*
+             * Black_Pieces.add(new Knight(7, 8, false, "Knight.png", this, false));
+             * 
+             * Black_Pieces.add(new SilverGeneral(2, 8, false, "SilverGeneral.png", this,
+             * false));
+             * Black_Pieces.add(new SilverGeneral(6, 8, false, "SilverGeneral.png", this,
+             * false));
+             * 
+             * Black_Pieces.add(new GoldGeneral(3, 8, false, "GoldGeneral.png", this,
+             * false));
+             * Black_Pieces.add(new GoldGeneral(5, 8, false, "GoldGeneral.png", this,
+             * false));
+             */
+
             Black_Pieces.add(new Bishop(1, 7, false, "Bishop.png", this, false));
             Black_Pieces.add(new Rook(7, 7, false, "Rook.png", this, false));
-            Black_Pieces.add(new Pawn(0, 6, false, "Pawn.png", this, false));
-            Black_Pieces.add(new Pawn(1, 6, false, "Pawn.png", this, false));
-            Black_Pieces.add(new Pawn(2, 6, false, "Pawn.png", this, false));
-            Black_Pieces.add(new Pawn(3, 6, false, "Pawn.png", this, false));
-            Black_Pieces.add(new Pawn(4, 6, false, "Pawn.png", this, true));
+
+            /*
+             * Black_Pieces.add(new Pawn(0, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(1, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(2, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(3, 6, false, "Pawn.png", this, false));
+             * 
+             */Black_Pieces.add(new Pawn(4, 6, false, "Pawn.png", this, true));
             Black_Pieces.add(new Pawn(5, 6, false, "Pawn.png", this, true));
             Black_Pieces.add(new Pawn(6, 6, false, "Pawn.png", this, true));
-            Black_Pieces.add(new Pawn(7, 6, false, "Pawn.png", this, false));
-            Black_Pieces.add(new Pawn(8, 6, false, "Pawn.png", this, false));
-
+            /*
+             * Black_Pieces.add(new Pawn(7, 6, false, "Pawn.png", this, false));
+             * Black_Pieces.add(new Pawn(8, 6, false, "Pawn.png", this, false));
+             */
             All_Pieces.addAll(White_Pieces);
             All_Pieces.addAll(Black_Pieces);
         } else {
 
-            // populate lists of pieces in a customized shogi layout
+            // populate lists of pieces for a customized shogi game layout
 
             All_Pieces.addAll(customPieces);
 
@@ -296,20 +346,15 @@ public class Board extends JComponent {
         Black_Pieces = new ArrayList<Piece>();
         All_Pieces = new ArrayList<Piece>();
 
+        possiblePromotion = new ArrayList<Piece>();
+
         initGrid();
 
         inGameMenu = new InGameMenu(this);
         BoardStates = new ArrayList<ArrayList<Piece>>();
 
-        Tutorial_Image = new ImageFactory(default_tutorial, Square_Width * 9, Square_Width * 2.6);
-
         PiecesCheckingWhiteKing = new ArrayList<Piece>();
         PiecesCheckingBlackKing = new ArrayList<Piece>();
-
-        capturablePiecesTxtHint = new JLabel();
-        capturablePiecesTxtHint.setBounds(25, 520, 750, 200);
-        capturablePiecesTxtHint.setFont(new Font("Segoe Script", Font.PLAIN, 15));
-        capturablePiecesTxtHint.setForeground(new Color(57, 208, 255));
 
         initPieces();
 
@@ -332,57 +377,30 @@ public class Board extends JComponent {
      * images, using Jframe and the ImageFactory class. These images are used to
      * draw / create the graphic images that make up the shogi display
      */
-    public void drawBoard() {
+    public void drawBoard() { // ++ ADD TUTORIAL TXT TO SAY IF PIECE IS BLOCKING CHECK
 
         Static_Images = new ArrayList<ImageFactory>();
+        Dynamic_Images=new ArrayList<ImageFactory>();
         Piece_Images = new ArrayList<ImageFactory>();
-        Arrow_Images = new ArrayList<ImageFactory>();
-
-        this.remove(capturablePiecesTxtHint);
-
-        Tutorial_Image = (!(checkForCheckMate() || whiteIschecked() || blackIschecked() || PromotionButtonOn))
-                ? new ImageFactory(default_tutorial, Square_Width * 9, Square_Width * 2.6)
-                : null;
+        AssistedImages = new ArrayList<ImageFactory>();
 
         // add background
 
-        Background_Image = new ImageFactory(background_image_file_path, 0, 0);
+        Static_Images.add(new ImageFactory(background_image_file_path, 0.0, 0.0));
 
         // add menu button
 
         Static_Images.add(new ImageFactory(menu_button, 14.5 * Square_Width, 0.1 * Square_Width));
 
-        // add menu if menu button is pressed
-
-        InGameMenu_Images = (InGameMenuIsDisplay) ? inGameMenu.getImages() : null;
-
         // add board grid
 
         Static_Images.add(new ImageFactory(board_file_path, 0, 0));
 
-        // add active square if a piece is clicked and tutorial image corresponding to
-        // piece (if tutorials are on)
+        // add active square if a piece is clicked
 
         if (Active_Piece != null) {
             Static_Images.add(new ImageFactory(active_square_file_path, Square_Width * Active_Piece.getX(),
                     Square_Width * Active_Piece.getY()));
-
-            if (TutorialOn && checkForCheckMate() == false && PromotionButtonOn == false) {
-
-                String tutorial_file_path = default_tutorial;
-
-                if (/* PlayerIsWhite && */Active_Piece.isWhite()) {
-                    tutorial_file_path = (!Active_Piece.is_promoted())
-                            ? tutorial_white_pieces_file_path + Active_Piece.getFilePath()
-                            : promoted_tutorial_white_pieces_file_path + Active_Piece.getFilePath();
-                } else if ((/* PlayerIsWhite==false && */Active_Piece.isBlack())) {
-                    tutorial_file_path = (!Active_Piece.is_promoted())
-                            ? tutorial_black_pieces_file_path + Active_Piece.getFilePath()
-                            : promoted_tutorial_black_pieces_file_path + Active_Piece.getFilePath();
-                }
-
-                Tutorial_Image = new ImageFactory(tutorial_file_path, Square_Width * 9, Square_Width * 2.6);
-            }
         }
 
         // add pieces / update piece positions
@@ -408,7 +426,7 @@ public class Board extends JComponent {
 
             String checkmate_file_path = whiteIschecked() ? white_checkmate_file_path : black_checkmate_file_path;
 
-            Static_Images.add(new ImageFactory(checkmate_file_path, Square_Width * 9, Square_Width * 2.6));
+            Dynamic_Images.add(new ImageFactory(checkmate_file_path, Square_Width * 9, Square_Width * 2.6));
         }
 
         // add check display (when checked)
@@ -418,7 +436,7 @@ public class Board extends JComponent {
             Background_Image = new ImageFactory(red_background_image_file_path, 0, 0);
 
             if (Active_Piece == null && PromotionButtonOn == false) {
-                Static_Images.add(new ImageFactory(check_file_path, Square_Width * 9, Square_Width * 2.6));
+                Dynamic_Images.add(new ImageFactory(check_file_path, Square_Width * 9, Square_Width * 2.6));
             }
         }
 
@@ -427,108 +445,56 @@ public class Board extends JComponent {
         if (PromotionButtonOn == true && checkForCheckMate() == false) {
 
             if (Active_Piece == null) {
-                Static_Images.add(new ImageFactory(promote_buttons_file_path, Square_Width * 9, Square_Width * 2.6));
+                Dynamic_Images.add(new ImageFactory(promote_buttons_file_path, Square_Width * 9, Square_Width * 2.6));
             }
         }
 
-        // ADD HINTS / ASSISTS
+        // generate and add assisted images (hints and tutorials)
 
-        // add / update hints (if player hints are turned on)
+        AssistedFeatures assistedFeatures = new AssistedFeatures(this);
+        AssistedImages.addAll(assistedFeatures.generateAssistedImages());
 
-        if (this.HintsOn == true && checkForCheckMate() == false) {
-
-            /*
-             * if ((whites_turn&&PlayerIsWhite) ||
-             * ((whites_turn==false&&PlayerIsWhite==false))) {
-             */ // ++ show hints only when players turn?
-
-            // (if a king is checked) add get out of check hints
-
-            if ((whiteIschecked() && PlayerIsWhite) || (blackIschecked() && PlayerIsWhite == false)) {
-
-                // ++ [currently hints show every possible moves out of check, not best moves]
-                // ++ [change get out of check hints so that if king can move out of check this
-                // move over pieces blocking check by moving into capturable position] ++
-
-                ArrayList<Square> getOutOfCheckMoveHints = new ArrayList<Square>();
-                ArrayList<Square> getOutOfCheckDropHints = new ArrayList<Square>();
-
-                // get squares that can stop the check if a piece can move or be dropped into
-                // one of these
-                // squares add corresponding image to this to give player hint to get out of
-                // check
-
-                if (getOutOfcheckMoves != null) {
-
-                    for (Square moveSquare : getOutOfcheckMoves) {
-                        Static_Images.add(new ImageFactory(good_square_file_path,
-                                Square_Width * moveSquare.x, Square_Width * moveSquare.y));
-                    }
-                    for (Arrow arrow : getOutOfCheckArrows) {
-                        Arrow_Images.add(new ImageFactory(arrow.getFilePath(),
-                                Square_Width * arrow.getX(), Square_Width * arrow.getY()));
-                    }
-
-                }
-
-                if (getOutOfCheckDrops != null) {
-
-                    for (Square dropSquare : getOutOfCheckDrops) {
-                        Static_Images.add(new ImageFactory(drop_square_file_path,
-                                Square_Width * dropSquare.x, Square_Width * dropSquare.y));
-                    }
-                }
-            }
-            // (if king is not checked) add capturable pieces hints
-
-            // ++ [currently hints show every possible capturable piece, not the best piece
-            // to capture]
-            // ++ [change hints so that if their are multiple captureable pieces give user
-            // hint to capture most valueable piece]
-
-            else if (capturablePieces != null) {
-
-                for (Piece captureablePiece : capturablePieces) {
-
-                    if (((PlayerIsWhite && captureablePiece.isWhite() == false)
-                            || (PlayerIsWhite == false && captureablePiece.isWhite() == true))) {
-
-                        Static_Images.add(new ImageFactory(good_square_file_path,
-                                Square_Width * captureablePiece.getX(), Square_Width * captureablePiece.getY()));
-                    }
-
-                    if (((PlayerIsWhite && captureablePiece.isWhite())
-                            || (PlayerIsWhite == false && captureablePiece.isWhite() == false))) {
-                        Static_Images.add(new ImageFactory(bad_square_file_path,
-                                Square_Width * captureablePiece.getX(), Square_Width * captureablePiece.getY()));
-                    }
-                }
-                if (InGameMenuIsDisplay == false || PromotionButtonOn == false) {
-                    this.add(capturablePiecesTxtHint);
-                }
-
-                for (Arrow arrow : arrows) {
-
-                    Arrow_Images.add(new ImageFactory(arrow.getFilePath(),
-                            Square_Width * arrow.getX(), Square_Width * arrow.getY()));
-                }
-            }
-            boolean possibleCheckMate = (PlayerIsWhite) ? checkForCheckMateMoves(White_Pieces)
-                    : checkForCheckMateMoves(Black_Pieces);
-
-            if (possibleCheckMate) {
-                for (Square checkMateSquare : checkMateMoves) { // ++ show user potential checkmates moves against them
-                    Static_Images.add(new ImageFactory(checkmate_square_file_path,
-                            Square_Width * checkMateSquare.x, Square_Width * checkMateSquare.y));
-                }
-                for (Arrow arrow : checkmateArrows) {
-                    Arrow_Images.add(new ImageFactory(arrow.getFilePath(),
-                            Square_Width * arrow.getX(), Square_Width * arrow.getY()));
-                }
-            }
-
-        }
         this.repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+
+        super.paintComponent(g);
+
+        Graphics2D g2 = (Graphics2D) g;
+        addImages(g2);
+    }
+
+    /**
+     * The addImages method is used to add all the image objects that populate the
+     * board component display contained in the board jframe window that makes the
+     * graphical display of objects
+     * 
+     * @param g2 The graphics used for rendering images objects within component
+     */
+    private void addImages(Graphics2D g2) {
+
+        ArrayList<ImageFactory> All_Images = new ArrayList<ImageFactory>();
+
+        All_Images.addAll(Static_Images);
+        All_Images.addAll(Dynamic_Images);
+        All_Images.addAll(Piece_Images);
+        All_Images.addAll(AssistedImages);
+
+        if (InGameMenuIsDisplay) {
+            All_Images.addAll(inGameMenu.getImages());
+        }
+
+        if (cbImages != null) {
+            All_Images.addAll(cbImages);
+        }
+
+        for (ImageFactory image : All_Images) {
+            if (image != null) {
+                image.drawImage(g2);
+            }
+        }
     }
 
     /**
@@ -761,10 +727,7 @@ public class Board extends JComponent {
      * The updateGetOutOfCheckMovesAndDrops method is called when a player is in
      * check and updates the array lists getOutOfcheckMoves and getOutOfcheckDrops
      * accordingly adding squares that players pieces can move to, to either block
-     * check or capture the piece checking the king. Arrows are added to the
-     * getOutOfcheckArrow accordinly -these arrows are positions are on the pieces
-     * that can be dropped or moved to stop check and point in the direction of the
-     * move
+     * check or capture the piece checking the king.
      * 
      * @param pieces The array list of pieces that the method iterates through,
      *               checking for each pieces instance movement range for a
@@ -776,7 +739,8 @@ public class Board extends JComponent {
         getOutOfcheckMoves = new ArrayList<Square>();
         getOutOfCheckDrops = new ArrayList<Square>();
 
-        getOutOfCheckArrows = new ArrayList<Arrow>();
+        getOutOfcheckMovePiece = new ArrayList<Piece>();
+        getOutOfCheckDropPiece = new ArrayList<Piece>();
 
         for (Piece piece : pieces) {
 
@@ -786,13 +750,14 @@ public class Board extends JComponent {
                     if (piece.canBeDroppedToStopCheck(x, y) && piece.is_captured()/* && piece.canMove(x, y) */) {
 
                         getOutOfCheckDrops.add(new Square(x, y));
+
+                        getOutOfCheckDropPiece.add(piece);
                     }
                     if (piece.canMoveToStopCheck(x, y) && piece.canMove(x, y)) {
 
                         getOutOfcheckMoves.add(new Square(x, y));
 
-                        getOutOfCheckArrows.add(new Arrow(Piece.getMoveDirection(piece.getX(), piece.getY(), x, y),
-                                piece.getX(), piece.getY(), "black"));
+                        getOutOfcheckMovePiece.add(piece);
                     }
                 }
             }
@@ -803,342 +768,6 @@ public class Board extends JComponent {
         }
         if (getOutOfcheckMoves.isEmpty()) {
             getOutOfcheckMoves = null;
-        }
-    }
-
-    /**
-     * The updateCaptureablePieces method iterates through all the pieces in the
-     * game (within the All_Pieces array) to calculate if a piece is capturable: if
-     * the capture of the piece results in giving the player an advanced position;
-     * the capturablePieces array list is update accordingly
-     */
-    private void updateCaptureablePieces() { // [BUG] doesnt show capturable pieces at start of game // ++ make more
-                                             // efficiant and optimize??
-
-        capturablePieces = new ArrayList<Piece>(); // ++ test xray defeners and attackers exchanges with piece values
-
-        // ++ remove duplicates
-
-        // check for capturable pieces, add to list and update Jlabel text accordingly
-
-        for (Piece piece : All_Pieces) {
-
-            int xRayAttackers = 0;
-            int xRayDefeners = 0;
-
-            // check if piece is unprotected and can be captured
-
-            piece.resetCaptureWith();
-
-            if (piece.getAttackers().size() > 0 && piece.is_protected() == false) {
-
-                capturablePieces.add(piece);
-
-            }
-            // check if lower value piece can capture highter value piece (sacrafice)
-
-            if ((piece.getAttackers().size() > 0)) {
-
-                for (Piece attacker : piece.getAttackers()) {
-
-                    if (attacker.getValue() < piece.getValue()) {
-
-                        capturablePieces.add(piece);
-
-                        piece.addCaptureWith(attacker);
-                    }
-
-                    // calculate xray attackers
-
-                    String directionTowardAttacker = Piece.getMoveDirection(piece.getX(), piece.getY(), attacker.getX(),
-                            attacker.getY());
-                    String directionAwayFrmAttacker = Piece.getMoveDirection(attacker.getX(), attacker.getY(),
-                            piece.getX(), piece.getY());
-
-                    ArrayList<Square> squares = piece.getSquaresInDirection(directionTowardAttacker);
-
-                    if (squares != null) {
-
-                        for (Square square : squares) {
-
-                            if (getPiece(square.x, square.y) != null) {
-
-                                if ((getPiece(square.x, square.y).isWhite() && piece.isBlack())
-                                        || ((getPiece(square.x, square.y).isBlack() && piece.isWhite()))) {
-
-                                    if ((getPiece(square.x, square.y).getClass() == Rook.class)
-                                            || (getPiece(square.x, square.y).getClass() == Lance.class)
-                                            || (getPiece(square.x, square.y).getClass() == Bishop.class)) { // ++fix
-                                                                                                            // extendability
-
-                                        if ((getSquare(piece.getX(), piece.getY()).isContainedWithin(
-                                                getPiece(square.x, square.y).getMovementRange(square.x, square.y,
-                                                        directionAwayFrmAttacker)))) {
-
-                                            xRayAttackers = xRayAttackers + 1;
-                                        }
-                                    }
-                                } else {
-                                    break;
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-
-            // calculate capturable pieces depending on exchanges of pieces dependent on
-            // piece value
-
-            // calculate xray defenders
-
-            if (piece.getDefenders() != null) {
-
-                for (Piece defender : piece.getDefenders()) {
-
-                    String directionTowardDefender = Piece.getMoveDirection(piece.getX(), piece.getY(), defender.getX(),
-                            defender.getY());
-                    String directionAwayFrmDefender = Piece.getMoveDirection(defender.getX(), defender.getY(),
-                            piece.getX(), piece.getY());
-
-                    ArrayList<Square> squares = piece.getSquaresInDirection(directionTowardDefender);
-
-                    if (squares != null) {
-
-                        for (Square square : squares) {
-
-                            if (getPiece(square.x, square.y) != null) {
-
-                                if ((getPiece(square.x, square.y).isWhite() && piece.isWhite())
-                                        || ((getPiece(square.x, square.y).isBlack() && piece.isBlack()))) {
-
-                                    if ((getPiece(square.x, square.y).getClass() == Rook.class)
-                                            || (getPiece(square.x, square.y).getClass() == Lance.class)
-                                            || (getPiece(square.x, square.y).getClass() == Bishop.class)) { // ++fix
-                                                                                                            // extendability
-
-                                        if ((getSquare(piece.getX(), piece.getY()).isContainedWithin(
-                                                getPiece(square.x, square.y).getMovementRange(square.x, square.y,
-                                                        directionAwayFrmDefender)))) {
-
-                                            xRayDefeners = xRayDefeners + 1;
-                                        }
-                                    }
-                                } else {
-                                    break;
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-
-            if ((piece.getAttackers().size() + xRayAttackers > piece.getDefenders().size() + xRayDefeners)
-                    && piece.getDefenders().size() + xRayDefeners > 0) {
-
-                for (Piece attacker : piece.getAttackers()) {
-
-                    if (attacker.getValue() <= piece.getValue()) {
-
-                        capturablePieces.add(piece);
-
-                        piece.addCaptureWith(attacker);
-
-                    }
-                }
-            }
-
-        }
-
-        if (capturablePieces.isEmpty()) {
-            capturablePieces = null;
-        } else {
-            // updateCaptureableTXT();
-            updateCaptureableArrowHints();
-        }
-    }
-
-    /**
-     * The updateCapturableTXT method ... ++
-     */
-    public void updateCaptureableTXT() { // ++ [remove or make more readable/ user friendly] ++ chnage number
-                                         // coordinates to letters
-
-        String capturablePiecesTxt = "";
-        String capture = "CAPTURE: ";
-        String captureWith;
-        String protect = " <br/> PROTECT :";
-        String protectFrom;
-
-        for (Piece capturablePiece : capturablePieces) {
-
-            if ((capturablePiece.isWhite() && PlayerIsWhite)
-                    || (capturablePiece.isWhite() == false && PlayerIsWhite == false)) {
-                protect = protect + " (" + capturablePiece.getX() + " , " + capturablePiece.getY() + " ) ";
-
-                protectFrom = " from: ";
-                for (Piece attacker : capturablePiece.getAttackers()) {
-
-                    protectFrom = protectFrom + " ( " + attacker.getX() + " , " + attacker.getY() + " ), ";
-                }
-                protect = protect + protectFrom;
-            } else {
-                capture = capture + "         " + " (" + capturablePiece.getX() + " , " + capturablePiece.getY()
-                        + " ) ";
-
-                captureWith = " with: ";
-                if (capturablePiece.getCaptureWith().isEmpty() == false) {
-
-                    for (Piece attacker : capturablePiece.getCaptureWith()) {
-
-                        captureWith = captureWith + " ( " + attacker.getX() + " , " + attacker.getY() + " ) ";
-                    }
-
-                } else {
-                    for (Piece attacker : capturablePiece.getAttackers()) {
-
-                        captureWith = captureWith + " ( " + attacker.getX() + " , " + attacker.getY() + " ) ";
-                    }
-                }
-                capture = capture + captureWith;
-
-                capture = capture + ", " /* +"<br/>" */;
-
-            }
-        }
-
-        if (capture.equals("CAPTURE: ") || protect.equals(" <br/> MOVE :")) {
-            capturablePiecesTxt = (capture.equals("CAPTURE: ")) ? "<html>" + protect + "</html>"
-                    : "<html>" + capture + "</html>";
-        } else {
-            capturablePiecesTxt = "<html>" + capture + protect + "</html>";
-        }
-
-        // capturablePiecesTxt =
-        // (capturablePiecesTxt.length()>0)?capturablePiecesTxt.substring(0,
-        // capturablePiecesTxt.length() -1):""; //remove comma at end of txt
-
-        capturablePiecesTxtHint.setText(capturablePiecesTxt);
-    }
-
-    /**
-     * The updateCaptureableArrowHints method iterates through all the captureable
-     * pieces in the game (within the capturablePieces array) and depending on what
-     * the colour the user is playing as calcualte the arrows positions and
-     * directions that indicate where the user should move to move their capturable
-     * pieces to safety or where the user should move pieces to capture enemy
-     * capturable pieces (also contained within the captureable pieces array)
-     */
-    public void updateCaptureableArrowHints() {
-
-        arrows = new ArrayList<Arrow>();
-
-        for (Piece capturablePiece : capturablePieces) {
-
-            // add arrows (valid moves) to pieces to possible moves away from opposing piece
-
-            if ((capturablePiece.isWhite() && PlayerIsWhite)
-                    || (capturablePiece.isWhite() == false && PlayerIsWhite == false)) {
-
-                for (Piece attacker : capturablePiece.getAttackers()) {
-
-                    String DirectionTowardAttacker = "";
-                    String DirectionAwayAttacker = "";
-
-                    ArrayList<String> allDirections = new ArrayList<String>();
-                    allDirections.add("N");
-                    allDirections.add("NE");
-                    allDirections.add("NW");
-                    allDirections.add("S");
-                    allDirections.add("SE");
-                    allDirections.add("SW");
-                    allDirections.add("W");
-                    allDirections.add("E");
-
-                    DirectionTowardAttacker = Piece.getMoveDirection(capturablePiece.getX(), capturablePiece.getY(),
-                            attacker.getX(), attacker.getY());
-                    DirectionAwayAttacker = Piece.getMoveDirection(attacker.getX(), attacker.getY(),
-                            capturablePiece.getX(), capturablePiece.getY());
-
-                    if (attacker.getClass() == Rook.class || attacker.getClass() == Lance.class
-                            || attacker.getClass() == Bishop.class) { // ++ [fix extendability -for ranged pieces]
-
-                        allDirections.remove(DirectionTowardAttacker);
-                        allDirections.remove(DirectionAwayAttacker);
-                    } else {
-                        allDirections.remove(DirectionTowardAttacker);
-                    }
-
-                    for (String Direction : allDirections) {
-
-                        if (capturablePiece.getPossibleDisplacementRange(capturablePiece.getX(), capturablePiece.getY(),
-                                Direction) != null) {
-
-                            // check move in direction is safe
-
-                            boolean moveIsSafe = true;
-
-                            for (Square possibleMove : capturablePiece.getPossibleDisplacementRange(
-                                    capturablePiece.getX(), capturablePiece.getY(), Direction)) {
-
-                                int currPosX = capturablePiece.getX();
-                                int currPosY = capturablePiece.getY();
-
-                                capturablePiece.setX(possibleMove.x);
-                                capturablePiece.setY(possibleMove.y);
-
-                                updatePiecesAttackersAndDefenders();
-
-                                if (capturablePiece.getAttackers().size() > capturablePiece.getDefenders().size()) {
-
-                                    moveIsSafe = false;
-                                } else {
-
-                                    moveIsSafe = true;
-
-                                    for (Piece Attacker : capturablePiece.getAttackers()) {
-                                        if (Attacker.getValue() <= capturablePiece.getValue()) {
-                                            moveIsSafe = false;
-                                        }
-                                    }
-                                }
-
-                                capturablePiece.setX(currPosX);
-                                capturablePiece.setY(currPosY);
-
-                                updatePiecesAttackersAndDefenders();
-
-                            }
-                            if (moveIsSafe) {
-                                arrows.add(
-                                        new Arrow(Direction, capturablePiece.getX(), capturablePiece.getY(), "black"));
-                            }
-                        }
-                    }
-                }
-
-            } else {
-                // add arrows to pieces toward possible opposing piece capture
-
-                if (capturablePiece.getCaptureWith().isEmpty() == false) {
-
-                    for (Piece attacker : capturablePiece.getCaptureWith()) {
-
-                        arrows.add(new Arrow(Piece.getMoveDirection(attacker.getX(), attacker.getY(),
-                                capturablePiece.getX(), capturablePiece.getY()), attacker.getX(), attacker.getY(),
-                                "green"));
-                    }
-                } else {
-                    for (Piece attacker : capturablePiece.getAttackers()) {
-
-                        arrows.add(new Arrow(Piece.getMoveDirection(attacker.getX(), attacker.getY(),
-                                capturablePiece.getX(), capturablePiece.getY()), attacker.getX(), attacker.getY(),
-                                "green"));
-                    }
-                }
-            }
         }
     }
 
@@ -1160,13 +789,23 @@ public class Board extends JComponent {
         updateAttackingSquares(); // <- ++ fix method?
         updatePiecesAttackersAndDefenders();
         updateProtectedPieces();
-        updateCaptureablePieces();
+        // updateCaptureablePieces();
 
         if (checkForCheck(getKing(White_Pieces))/* ||whites_turn */) {
             updateGetOutOfCheckMovesAndDrops(White_Pieces);
         } else if (checkForCheck(getKing(Black_Pieces))/* ||whites_turn==false */) {
             updateGetOutOfCheckMovesAndDrops(Black_Pieces);
         }
+    }
+
+    /**
+     * The checkForCheckMate method checks if any players king is in check
+     * 
+     * @return true if any players king is in check, false if any players king is
+     *         not in check
+     */
+    public boolean checkForCheckMate() {
+        return ((getOutOfcheckMoves == null) && (whiteIschecked() || blackIschecked())) ? true : false;
     }
 
     /**
@@ -1211,185 +850,11 @@ public class Board extends JComponent {
     }
 
     /**
-     * The checkForCheckMate method checks if any players king is in check
      * 
-     * @return true if any players king is in check, false if any players king is
-     *         not in check
+     * @return
      */
-    public boolean checkForCheckMate() {
-        return ((getOutOfcheckMoves == null) && (whiteIschecked() || blackIschecked())) ? true : false;
-    }
-
-    /**
-     * The checkForCheckMatesMoves iterates through an array list of pieces and
-     * checks / calculates for each pieces move in the pieces movement range wether
-     * the move would result in checkmate
-     * 
-     * @param pieces Array list of pieces that the method iterates through and
-     *               calculates for each piece if it can move to checkmate
-     * @return true if their is a possible checkmate move within the movement range
-     *         of the pieces, false if not
-     */
-    public boolean checkForCheckMateMoves(ArrayList<Piece> pieces) { // ++ add promotion checkmates //++ if piece
-                                                                     // blocking checkmate moves is it checkmate?4
-                                                                     // ++ TEST
-
-        checkMateMoves = new ArrayList<Square>();
-        checkmateArrows = new ArrayList<Arrow>(); // check if piece that blocks checkmate can be taken resulting in next
-                                                  // move checkmate
-
-        if (getOpposingKing(pieces).getMovementRange() == null
-                || getOpposingKing(pieces).getMovementRange().size() <= 4) { // check if a move can block more than 4
-                                                                             // king moves and check for check mate?
-
-            for (Piece piece : pieces) {
-
-                if (piece.getMovementRange() != null) {
-
-                    for (Square possibleMove : piece.getMovementRange()) {
-
-                        if (isCheckMateMove(piece, possibleMove.x, possibleMove.y)
-                                && !(piece.getClass() == Pawn.class && piece.is_captured())) { // check pawn is not
-                                                                                               // being dropped into
-                                                                                               // checkmate ++ fix
-                                                                                               // extendability
-                            checkMateMoves.add(possibleMove);
-                            checkmateArrows.add(new Arrow(
-                                    Piece.getMoveDirection(piece.getX(), piece.getY(), possibleMove.x, possibleMove.y),
-                                    piece.getX(), piece.getY(), "gold")); // change to gold arrow
-                        }
-                    }
-                }
-            }
-        }
-
-        if (checkMateMoves.isEmpty()) {
-            checkMateMoves = null;
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /**
-     * The isCheckMateMove method calculates whether a piece moving to a position
-     * would result in checkmate
-     * 
-     * @param piece The piece the method checks if moving to a specified position
-     *              would result in checkmate
-     * @param x     The x axis position of the potential checkmate position
-     * @param y     The y axis position of the poteniial checkmate position
-     * @return true if moveing the piece to the position specified would result in
-     *         checkmate, false if not
-     */
-    public boolean isCheckMateMove(Piece piece, int x, int y) {
-
-        boolean isCheckMateMove;
-
-        int currentXPos = piece.getX();
-        int currentYPos = piece.getY();
-
-        Piece king;
-        ArrayList<Square> defendingSquares;
-
-        if (piece.isBlack()) {
-            king = getKing(White_Pieces);
-            defendingSquares = whiteAttackingSquares;
-        } else {
-            king = getKing(Black_Pieces);
-            defendingSquares = blackAttackingSquares;
-        }
-
-        boolean moveIsSafe = false;
-
-        if (getPiece(x, y) != null
-                && ((piece.isWhite() && getPiece(x, y).isBlack()) || (piece.isBlack() && getPiece(x, y).isWhite()))) {
-
-            int Defenders = 0;
-
-            for (Square defendingSquare : defendingSquares) {
-
-                if (defendingSquare.x == x && defendingSquare.y == y) {
-                    Defenders = Defenders + 1;
-                }
-                if (Defenders > 1) {
-                    moveIsSafe = true;
-                    break;
-                }
-            }
-        } else {
-            moveIsSafe = true;
-        }
-
-        // check xray moves
-
-        for (Piece protector : piece.getDefenders()) {
-
-            if (protector.getMovementRange(protector.getX(), protector.getY(),
-                    Piece.getMoveDirection(protector.getX(), protector.getY(), king.getX(), king.getY())) != null) {
-
-                for (Square square : protector.getMovementRange(protector.getX(), protector.getY(),
-                        Piece.getMoveDirection(protector.getX(), protector.getY(), king.getX(), king.getY()))) {
-
-                    if (square.x == x && square.y == y) {
-                        moveIsSafe = true;
-                    }
-                }
-            }
-        }
-
-        piece.setX(x);
-        piece.setY(y);
-
-        boolean moveIsAdrop = false;
-
-        if (piece.is_captured()) { // ++ test
-            piece.captured(false);
-            moveIsAdrop = true;
-        }
-
-        updateBoardStatus();
-
-        if (checkForCheckMate() && moveIsSafe && !(x == king.getX() && y == king.getY())) {
-            isCheckMateMove = true;
-        } else {
-            isCheckMateMove = false;
-        }
-
-        piece.setX(currentXPos);
-        piece.setY(currentYPos);
-
-        if (moveIsAdrop) {
-            piece.captured(true);
-        }
-
-        updateBoardStatus();
-
-        return isCheckMateMove;
-
-    }
-
-    /**
-     * The removeDups method remove all duplicate squares from an array list of
-     * squares
-     * 
-     * @param Squares The array list of squares the method removes duplicate from
-     * @return The array list of squares with the duplicate squares removed
-     */
-    public ArrayList<Square> removeDups(ArrayList<Square> Squares) {
-
-        ArrayList<Square> newSquares = new ArrayList<Square>();
-        ArrayList<Square> tempSquares = new ArrayList<Square>();
-
-        for (Square square : Squares) {
-            newSquares.add(getSquare(square.x, square.y));
-        }
-        for (Square square : newSquares) {
-            if (tempSquares.contains(square) == false) {
-                tempSquares.add(getSquare(square.x, square.y));
-            }
-        }
-        return tempSquares;
+    public boolean checkForCheck(){
+        return (checkForCheck(getKing(White_Pieces))||checkForCheck(getKing(Black_Pieces)))?true:false;
     }
 
     /**
@@ -1401,8 +866,7 @@ public class Board extends JComponent {
      * @return Array list of squares between the king and the king attacker / piece
      *         checking the king
      */
-    public ArrayList<Square> getSquaresThatBlockCheck(Piece king) { // ++ [is tripple check possible in shogi? can you
-                                                                    // block a double check?...] test method...
+    public ArrayList<Square> getSquaresThatBlockCheck(Piece king) { 
 
         ArrayList<Square> blockingSquares = new ArrayList<Square>();
 
@@ -1424,30 +888,6 @@ public class Board extends JComponent {
                 }
             }
         }
-        /*
-         * else if (PiecesCheckingKing.size()==2){
-         * 
-         * // double check: only add squares to blocking squares if the squares block
-         * both of the checking pieces paths to the king
-         * 
-         * for (Square squareBetweenP1AndKing :
-         * getSquaresBetween(PiecesCheckingKing.get(0).getX(),
-         * PiecesCheckingKing.get(0).getY(), king.getX(), king.getY())){
-         * 
-         * for (Square squareBetweenP2AndKing :
-         * getSquaresBetween(PiecesCheckingKing.get(1).getX(),
-         * PiecesCheckingKing.get(1).getY(), king.getX(), king.getY())){
-         * 
-         * if (squareBetweenP1AndKing.x == squareBetweenP2AndKing.x &&
-         * squareBetweenP1AndKing.y==squareBetweenP2AndKing.y){
-         * 
-         * blockingSquares.add(squareBetweenP1AndKing);
-         * }
-         * }
-         * }
-         * }
-         */
-
         if (blockingSquares.isEmpty()) {
             blockingSquares = null;
         }
@@ -1468,6 +908,8 @@ public class Board extends JComponent {
         int COL = 0;
         Captured_White_Pieces = 0;
         Captured_Black_Pieces = 0;
+
+        piece.promote(false);
 
         // set piece to captured
 
@@ -1558,6 +1000,15 @@ public class Board extends JComponent {
 
         Piece Clicked_Piece = getPiece(Clicked_Column, Clicked_Row);
 
+        if (getPiece(Clicked_Column, Clicked_Row) != null) {
+            // System.out.println(getXrayDefenders((getPiece(Clicked_Column,Clicked_Row))));
+
+            System.out.println((getPiece(Clicked_Column, Clicked_Row).getExchangeValue()));
+            // System.out.println(getXrayAttackers(getPiece(Clicked_Column, Clicked_Row)));
+            // System.out.println(getPiece(Clicked_Column,
+            // Clicked_Row).getDefenders().size());
+        }
+
         // in game menu
 
         if (mouse_X > 14.5 * Square_Width && mouse_Y < 0.8 * Square_Width) {
@@ -1603,7 +1054,7 @@ public class Board extends JComponent {
                     // if piece is there, remove promotion (if promoted) and remove it/ capture
                     // piece so active piece can be there
                     if (Clicked_Piece != null) {
-                        Clicked_Piece.promote(false);
+
                         CapturedPeice(Clicked_Piece);
 
                     }
@@ -1620,9 +1071,7 @@ public class Board extends JComponent {
                     // if piece must be promoted promote, if not display PromotionButtonOn
                     if (((Active_Piece.isWhite() && Active_Piece.getY() == 8)
                             || (Active_Piece.isBlack() && Active_Piece.getY() == 0))
-                            && ((Active_Piece.getClass().equals(Pawn.class))
-                                    || (Active_Piece.getClass().equals(Lance.class))
-                                    || (Active_Piece.getClass().equals(Knight.class)))) { // ++ [fix extendability]
+                            && (Active_Piece.getMovementRange() == null)) {
 
                         if (possiblePromotion.contains(Active_Piece)) {
                             possiblePromotion.remove(Active_Piece);
@@ -1632,8 +1081,7 @@ public class Board extends JComponent {
 
                     }
                     // toggle promotion buttons on and select/ remove pieces for possible promotion
-                    else if ((Active_Piece.getClass().equals(King.class) == false
-                            && Active_Piece.getClass().equals(GoldGeneral.class) == false) // ++ [fix extendability]
+                    else if ((Active_Piece.hasPromotion())
                             && (Active_Piece.is_promoted() == false
                                     && (Active_Piece.getY() > 5 && Active_Piece.isWhite()
                                             || Active_Piece.getY() < 3 && Active_Piece.isBlack()))) {
@@ -1643,8 +1091,11 @@ public class Board extends JComponent {
                         if (Active_Piece.is_captured() == false) {
                             PromotionButtonOn = toggle(PromotionButtonOn);
                         }
-                        possiblePromotion.add(Active_Piece);
+                        if (possiblePromotion.contains(Active_Piece) == false) {
+                            possiblePromotion.add(Active_Piece);
+                        }
 
+                        // if peice moves out of promotion zone toggle promotion button
                     } else if (possiblePromotion.contains(Active_Piece)) {
 
                         if (Active_Piece.is_promoted() == false) {
@@ -1680,9 +1131,8 @@ public class Board extends JComponent {
 
                 // detect promote button pressed
                 if (PromotionButtonOn == true && mouse_X > 692 && mouse_X < 992 && mouse_Y > 190 && mouse_Y < 290) { // ++
-                                                                                                                     // [fix
-                                                                                                                     // button
-                                                                                                                     // extendability]
+                                                                                                                     // FIX
+                                                                                                                     // extendability
 
                     Previous_Peice.promote(true);
                     PromotionButtonOn = toggle(PromotionButtonOn);
@@ -1762,61 +1212,6 @@ public class Board extends JComponent {
         }
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-
-        super.paintComponent(g);
-
-        Graphics2D g2 = (Graphics2D) g;
-        addBackground(g2);
-        addImages(g2);
-    }
-
-    /**
-     * The addBackground method is used to add the object that make up the
-     * background image displayed within the board component contained in the board
-     * jframewindow
-     * 
-     * @param g2 The graphics used for rendering images objects within component
-     */
-    private void addBackground(Graphics2D g2) {
-
-        g2.setColor(getBackground());
-        g2.fillRect(0, 0, getWidth(), getHeight());
-        Background_Image.drawImage(g2);
-
-    }
-
-    /**
-     * The addImages method is used to add all the image objects that populate the
-     * board component display contained in the board jframe window that makes the
-     * graphical display of objects
-     * 
-     * @param g2 The graphics used for rendering images objects within component
-     */
-    private void addImages(Graphics2D g2) {
-
-        ArrayList<ImageFactory> All_Images = new ArrayList<ImageFactory>();
-
-        All_Images.addAll(Static_Images);
-        All_Images.addAll(Piece_Images);
-        All_Images.addAll(Arrow_Images);
-        if (TutorialOn && Tutorial_Image != null) {
-            All_Images.add(Tutorial_Image);
-        }
-        if (InGameMenuIsDisplay) {
-            All_Images.addAll(InGameMenu_Images);
-        }
-
-        if (cbImages != null) {
-            All_Images.addAll(cbImages);
-        }
-
-        for (ImageFactory image : All_Images) {
-            image.drawImage(g2);
-        }
-    }
-
     /**
      * The toggle method is used to flip a boolean value
      * 
@@ -1853,6 +1248,23 @@ public class Board extends JComponent {
         for (Piece p : Black_Pieces) {
             if (p.getX() == x && p.getY() == y) {
                 return p;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The getSquare accessor method returns the square within the grid at the
+     * coordinate given as parmeters
+     * 
+     * @param x the location of the square on the x axis
+     * @param y the location of the square on the y axis
+     */
+    public Square getSquare(int x, int y) {
+
+        for (Square square : grid) {
+            if (square.x == x && square.y == y) {
+                return square;
             }
         }
         return null;
@@ -2049,4 +1461,111 @@ public class Board extends JComponent {
     public BoardFrame getBoardFrame() {
         return boardFrame;
     }
+
+    /**
+     * getActivePiece accessor method
+     * 
+     * @return Piece selected by user input
+     */
+    public Piece getActivePiece() {
+        return Active_Piece;
+    }
+
+    /**
+     * PlayerIsWhite accessor method
+     * 
+     * @return True if the user is playing as white pieces, false if not
+     */
+    public boolean PlayerIsWhite() {
+        return PlayerIsWhite;
+    }
+
+    /**
+     * HintsOn accessor method
+     * 
+     * @return True if the user has selected the hintsOn setting in the menu, false
+     *         if not
+     */
+    public boolean hintsON() {
+        return HintsOn;
+    }
+
+    /**
+     * Square_Width accessor method
+     * 
+     * @return The numeric width of each square on the board grid
+     */
+    public int getSquare_Width() {
+        return Square_Width;
+    }
+
+    /**
+     * All_Pieces accessor method
+     * 
+     * @return Array list of all the pieces within the shogi game/ board
+     */
+    public ArrayList<Piece> getAllPieces() {
+        return All_Pieces;
+    }
+
+    /**
+     * getOutOfcheckMoves accessor method
+     * 
+     * @return array list of squares that specific pieces can move to, to result out
+     *         of check (squares respective to the getOutOfcheckMovePiece array)
+     */
+    public ArrayList<Square> getOutOfcheckMoves() {
+        return getOutOfcheckMoves;
+    }
+
+    /**
+     * getOutOfcheckMovePiece accessor method
+     * 
+     * @return array list of pieces that can move to stop check (pieces respective
+     *         to the getOutOfcheckMoves array)
+     */
+    public ArrayList<Piece> getOutOfcheckMovePiece() {
+        return getOutOfcheckMovePiece;
+    }
+
+    /**
+     * getOutOfCheckDrops
+     * 
+     * @return array list of squares that specific pieces can be dropped on, to
+     *         result out of check (squares respective to the getOutOfCheckDropPiece
+     *         array)
+     */
+    public ArrayList<Square> getOutOfCheckDrops() {
+        return getOutOfCheckDrops;
+    }
+
+    /**
+     * getOutOfCheckDropPiece accessor method
+     * 
+     * @return array list of pieces that can be dropped to stop check (pieces
+     *         respective to the getOutOfCheckDrops array)
+     */
+    public ArrayList<Piece> getOutOfCheckDropPiece() {
+        return getOutOfCheckDropPiece;
+    }
+
+    /**
+     * TutorialOn accessor method
+     * 
+     * @return True if the user has selected the TutorialOn setting in the menu,
+     *         false if not
+     */
+    public boolean TutorialOn() {
+        return TutorialOn;
+    }
+
+    /**
+     * PromotionButtonOn accessor method
+     * 
+     * @return True if the promotion buttons are display on the board, false if not
+     */
+    public boolean PromotionButtonOn() {
+        return PromotionButtonOn;
+    }
+
 }

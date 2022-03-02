@@ -2,11 +2,6 @@ package Shogigui.pieces;
 
 import Shogigui.Board;
 
-// ++
-// [MAKE SURE PAWN DROP CANNOT CAUSE INSTANT CHECK MATE... 
-// AND PAWN CANNOT BE DROPPED IN SAME COLUMN AS A UN PROMOTED PAWN]   <-- ++ test
-// ++
-
 public class Pawn extends Piece {
 
     public Pawn(int x, int y, boolean is_white, String file_path, Board board,
@@ -20,7 +15,7 @@ public class Pawn extends Piece {
 
         if (this.is_captured == true && board.getPiece(destination_x, destination_y) == null) {
 
-            if (this.isWhite() && destination_y > 7 || this.isBlack() && destination_y < 1 || (this.moveIsOutOfBounds(destination_x, destination_y))) {
+            if ((this.is_promoted==false&&(this.isWhite() && destination_y > 7 || this.isBlack() && destination_y < 1)) || (this.moveIsOutOfBounds(destination_x, destination_y))) {
                 return false;
             }
 
@@ -34,9 +29,9 @@ public class Pawn extends Piece {
                 }
             }
 
-            // dont allow pawn to be dropped if it causes checkmate 
+            // dont allow pawn to be dropped if it results in checkmate 
 
-            if (board.isCheckMateMove(this, destination_x, destination_y)){
+            if (this.isCheckMateMove(destination_x, destination_y)){
                 return false;
             }
 

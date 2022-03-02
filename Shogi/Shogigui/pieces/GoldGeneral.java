@@ -8,6 +8,7 @@ public class GoldGeneral extends Piece {
             boolean is_promoted) {
         super(x, y, is_white, file_path, board, is_promoted);
         this.value=6;
+        this.hasPromotion=false;
     }
 
     @Override

@@ -239,6 +239,7 @@ public class CustomBoard extends Board implements Cloneable {
                 } else {
                     Black_Pieces.add(newPiece);
                 }
+                Active_Piece.captured(false);
 
                 Active_Piece = null;
             }
@@ -268,7 +269,6 @@ public class CustomBoard extends Board implements Cloneable {
         for (Piece piece : All_Pieces) {
 
             if (piece.moveIsOutOfBounds(piece.getX(), piece.getY()) == false) {
-                piece.captured(false);
                 customPieces.add(piece);
             }
         }

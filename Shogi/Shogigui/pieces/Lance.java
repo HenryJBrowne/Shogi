@@ -8,6 +8,11 @@ public class Lance extends Piece {
             boolean is_promoted) {
         super(x, y, is_white, file_path, board, is_promoted);
         this.value=3;
+        if (this.isWhite()){
+            this.rangedAttackDirections.add("S");
+        }else{
+            this.rangedAttackDirections.add("N");
+        }
     }
 
     @Override

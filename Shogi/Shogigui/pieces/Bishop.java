@@ -8,6 +8,7 @@ public class Bishop extends Piece {
             boolean is_promoted) {
         super(x, y, is_white, file_path, board, is_promoted);
         this.value=8;
+        this.rangedAttackDirections.add("NE");this.rangedAttackDirections.add("NW");this.rangedAttackDirections.add("SE");this.rangedAttackDirections.add("SW");
     }
 
     @Override

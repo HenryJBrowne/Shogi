@@ -8,6 +8,7 @@ public class Rook extends Piece {
             boolean is_promoted) {
         super(x, y, is_white, file_path, board, is_promoted);
         this.value=10;
+        this.rangedAttackDirections.add("N");this.rangedAttackDirections.add("E");this.rangedAttackDirections.add("S");this.rangedAttackDirections.add("W");
     }
 
     @Override

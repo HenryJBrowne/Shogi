@@ -20,9 +20,6 @@ public class MenuFrame extends JFrame {
         this.setResizable(false);
         component = new Menu(this);
         this.add(component, BorderLayout.CENTER);
-
-        menu = (Menu) component;
-
         this.setLocation(200, 50);
         this.pack();
         this.setVisible(true);

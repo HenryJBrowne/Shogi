@@ -30,7 +30,7 @@ public class Menu extends JComponent {
     private String Tutorial_Button_File_Path;
     private String PlayerCol_Button_File_Path;
 
-    public boolean PlayPressed = false; // encapsulate and add accessor methods?...
+    //public boolean PlayPressed = false; // encapsulate and add accessor methods?...
     public boolean PlayerIsWhite = true;
     public boolean HintsOn = true;
     public boolean TutorialOn = true;

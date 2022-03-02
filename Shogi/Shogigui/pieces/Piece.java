@@ -20,10 +20,12 @@ public class Piece implements Cloneable {
     Piece is_blocking_check_from;
     ArrayList<Piece> Attackers;
     ArrayList<Piece> Defenders;
-
     ArrayList<Piece> captureWith;
-
     int value;
+    boolean hasPromotion = true;
+    ArrayList<String> rangedAttackDirections = new ArrayList<String>();
+
+    int exchangeValue = 0;
 
     /**
      * The piece constructor is used to initilize a piece object on the shogi board
@@ -116,6 +118,38 @@ public class Piece implements Cloneable {
         }
         return true;
     }
+     /**
+     * The isLegalMove method checks if a piece moving to a specificed position
+     * would result in an illegal moves taking place
+     * 
+     * @param destination_x The location of the position on the grids x axis of the
+     *                      possible illegal move
+     * @param destination_y The location of the position on the grids y axis of the
+     *                      possible illegal move
+     * @return True if the move is legal, false if not
+     */
+    public boolean isLegalMove(int destination_x, int destination_y) {
+
+        // do not allow the peice to move outside the board
+
+        if (this.moveIsOutOfBounds(destination_x, destination_y)) {
+            return false;
+        }
+
+        // if there is a piece at the destination, and it is our own, dont let us move
+        // there
+
+        if (this.moveIsOnTopOfOwnPiece(destination_x, destination_y)) {
+            return false;
+        }
+
+        // dont allow the king to move into space that puts it in check
+
+        if (this.moveChecksOwnKing(destination_x, destination_y)) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * The canMove method is used to determin if a piece can legally move to a
@@ -152,37 +186,6 @@ public class Piece implements Cloneable {
             return true;
         }
         return false;
-    }
-
-    /**
-     * The isLegalMove method checks if a piece moving to a specificed position would result in an illegal moves taking place
-      * @param destination_x The location of the position on the grids x axis of the
-     *                       possible illegal move
-     * @param destination_y The location of the position on the grids y axis of the
-     *                      possible illegal move
-     * @return True if the move is legal, false if not 
-     */
-    public boolean isLegalMove(int destination_x, int destination_y){
-        
-        // do not allow the peice to move outside the board
-
-        if (this.moveIsOutOfBounds(destination_x, destination_y)) {
-            return false;
-        }
-
-        // if there is a piece at the destination, and it is our own, dont let us move
-        // there
-
-        if (this.moveIsOnTopOfOwnPiece(destination_x, destination_y)) {
-            return false;
-        }
-
-        // dont allow the king to move into space that puts it in check
-
-        if (this.moveChecksOwnKing(destination_x, destination_y)) {
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -232,6 +235,57 @@ public class Piece implements Cloneable {
         }
 
         return false;
+    }
+
+    /**
+     * The isCheckMateMove method calculates whether a piece moving to a position
+     * would result in checkmate
+     * 
+     * @param x     The x axis position of the potential checkmate position
+     * @param y     The y axis position of the poteniial checkmate position
+     * @return true if moving the piece to the position specified would result in
+     *         checkmate, false if not
+     */
+    public boolean isCheckMateMove(int x, int y) {
+
+        boolean isCheckMateMove;
+
+        int currentXPos = this.getX();
+        int currentYPos = this.getY();
+
+        if (board.getPiece(x, y) != null && board.getPiece(x, y).getClass() == King.class) { 
+            return false;
+        }
+
+        this.setX(x);
+        this.setY(y);
+
+        boolean moveIsAdrop = false;
+
+        if (this.is_captured()) {
+            this.captured(false);
+            moveIsAdrop = true;
+        }
+
+        board.updateBoardStatus();
+
+        if (board.checkForCheckMate()) {
+            isCheckMateMove = true;
+        } else {
+            isCheckMateMove = false;
+        }
+
+        this.setX(currentXPos);
+        this.setY(currentYPos);
+
+        if (moveIsAdrop) {
+            this.captured(true);
+        }
+
+        board.updateBoardStatus();
+
+        return isCheckMateMove;
+
     }
 
     /**
@@ -380,7 +434,7 @@ public class Piece implements Cloneable {
         for (int x = 0; x < board.getROWS(); x++) {
             for (int y = 0; y < board.getCOLS(); y++) {
 
-                if (this.canMove(x, y)) {
+                if (this.canMove(x, y) || this.canBeDropped(x, y)) { // ++ test
 
                     movementRange.add(board.new Square(x, y));
                 }
@@ -392,7 +446,7 @@ public class Piece implements Cloneable {
 
         return movementRange;
     }
-
+    
     /**
      * The getSquaresInDirection method is used to retreive all the squares from a
      * piece position to the end of the playing board grid in a specified direction
@@ -424,13 +478,15 @@ public class Piece implements Cloneable {
         if (Direction.contains("W")) {
             ChangeInX = -1;
         }
+        if (!(ChangeInX == 0 && ChangeInY == 0)) {
 
-        Square Square = board.new Square(this.getX(), this.getY());
+            Square Square = board.new Square(this.getX(), this.getY());
 
-        while (moveIsOutOfBounds(Square.x, Square.y) == false) {
-            Square.x = Square.x + ChangeInX;
-            Square.y = Square.y + ChangeInY;
-            Squares.add(board.new Square(Square.x, Square.y));
+            while (moveIsOutOfBounds(Square.x, Square.y) == false) {
+                Square.x = Square.x + ChangeInX;
+                Square.y = Square.y + ChangeInY;
+                Squares.add(board.new Square(Square.x, Square.y));
+            }
         }
 
         if (Squares.isEmpty()) {
@@ -540,46 +596,12 @@ public class Piece implements Cloneable {
      */
     public ArrayList<Board.Square> getMovementRange(int xpos, int ypos, String movementDirection) {
 
-        int ChangeInX = 0;
-        int ChangeInY = 0;
-
-        Square Square = board.new Square(xpos, ypos);
-
         ArrayList<Board.Square> Squares = new ArrayList<Board.Square>();
 
-        if (((movementDirection == "N" || movementDirection == "E" || movementDirection == "S" // ++ [fix
-                                                                                               // extendability...]
+        if (this.isRangedAttacker() && this.getRangedAttackDirections().contains(movementDirection)) {
 
-                || movementDirection == "W") && this.getClass() == Rook.class)
-                || (movementDirection == "N" && this.isBlack() && this.getClass() == Lance.class)
-                || (movementDirection == "E" && this.isWhite() && this.getClass() == Lance.class)
-                || ((movementDirection == "NE" || movementDirection == "NW" || movementDirection == "SE"
-                        || movementDirection == "SW") && this.getClass() == Bishop.class)) {
+            Squares = this.getSquaresInDirection(movementDirection);
 
-            if (movementDirection.contains("N")) {
-                ChangeInY = -1;
-
-            }
-            if (movementDirection.contains("S")) {
-                ChangeInY = +1;
-
-            }
-            if (movementDirection.contains("E")) {
-                ChangeInX = +1;
-            }
-            if (movementDirection.contains("W")) {
-                ChangeInX = -1;
-            }
-            while (moveIsOutOfBounds(Square.x, Square.y) == false) {
-                Square.x = Square.x + ChangeInX;
-                Square.y = Square.y + ChangeInY;
-                Squares.add(board.new Square(Square.x, Square.y));
-            }
-
-        }
-
-        if (Squares.isEmpty()) {
-            Squares = null;
         }
 
         return Squares;
@@ -626,7 +648,6 @@ public class Piece implements Cloneable {
      * white piece)
      */
     public void changeColour() {
-
         is_white = (this.isWhite()) ? false : true;
 
     }
@@ -726,7 +747,8 @@ public class Piece implements Cloneable {
     }
 
     /**
-     * checking_if_defender accessor method retreives this checking_if_defender (when
+     * checking_if_defender accessor method retreives this checking_if_defender
+     * (when
      * checking_if_defender is true it allows the piece to move ontop of its own
      * colour pieces to check if an own colour piece was captured would this piece
      * be able to move to defend the position)
@@ -737,13 +759,14 @@ public class Piece implements Cloneable {
         return checking_if_defender;
     }
 
-     /**
+    /**
      * set_checking_if_defender set method set this checking_if_defender (when
      * checking_if_defender is true it allows the piece to move ontop of its own
      * colour pieces to check if an own colour piece was captured would this piece
      * be able to move to defend the position)
      * 
-     * @param checking_if_defender True if piece is being checked if it is a defender, false if not
+     * @param checking_if_defender True if piece is being checked if it is a
+     *                             defender, false if not
      */
     public void set_checking_if_defender(boolean checking_if_defender) {
         this.checking_if_defender = checking_if_defender;
@@ -917,4 +940,45 @@ public class Piece implements Cloneable {
     public void setBoard(Board board_) {
         this.board = board_;
     }
+
+    /**
+     * isRangedAttacker accessor method
+     * 
+     * @return True is the piece is a ranged attack / can move mutiple squares at a
+     *         time, false if not
+     */
+    public boolean isRangedAttacker() {
+        return (rangedAttackDirections == null || rangedAttackDirections.isEmpty()) ? false : true;
+    }
+
+    /**
+     * getRangedAttackDirections accessor method
+     * 
+     * @return Array list of string compass directions / bearings where this piece
+     *         can move multiple squares at a time (ranged attack)
+     */
+    public ArrayList<String> getRangedAttackDirections() {
+        return rangedAttackDirections;
+    }
+
+    /**
+     * hasPromotion accessor method
+     * 
+     * @return True if the piece has a promoted variation (ie has a set of promoted
+     *         moves), false if not
+     */
+    public boolean hasPromotion() {
+        return hasPromotion;
+    }
+
+    // testing 
+
+    public void setExchangeValue(int value) {
+        this.exchangeValue = value;
+    }
+
+    public int getExchangeValue() {
+        return exchangeValue;
+    }
+
 }
