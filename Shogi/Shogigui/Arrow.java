@@ -8,6 +8,7 @@ public class Arrow {
     private final String arrows_file_path = board_images_file_path + File.separator + "arrows" + File.separator;
     private final String gold_arrows_file_path = arrows_file_path + "gold_arrows" + File.separator;
     private final String green_arrows_file_path = arrows_file_path + "green_arrows" + File.separator;
+    private final String red_arrows_file_path = arrows_file_path + "red_arrows" + File.separator;
 
     private String Direction;
     private int x;
@@ -70,6 +71,9 @@ public class Arrow {
         }
         if (col.equals("green")) {
             return green_arrows_file_path + directionFilePath;
+        }
+        if (col.equals("red")){
+            return red_arrows_file_path + directionFilePath;
         } else {
             return arrows_file_path + directionFilePath;
         }

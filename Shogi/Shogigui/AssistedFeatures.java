@@ -2,17 +2,23 @@ package Shogigui;
 
 import Shogigui.Board.Square;
 import Shogigui.pieces.*;
+
+import java.awt.Color;
+import java.awt.Font;
 import java.io.*;
 import java.util.*;
+
+import javax.swing.JLabel;
+
 import Shogigui.pieces.Piece;
 
 public class AssistedFeatures {
 
     private final String board_square_images_file_path = "images" + File.separator + "board" + File.separator
             + "assistedSquares" + File.separator;
-    private final String good_square_file_path = board_square_images_file_path + "good_square.png";
-    private final String great_square_file_path = board_square_images_file_path + "great_square.png";
-    private final String amazing_square_file_path = board_square_images_file_path + "amazing_square.png";
+    private final String yellow_square_file_path = board_square_images_file_path + "good_square.png";
+    private final String orange_square_file_path = board_square_images_file_path + "great_square.png";
+    private final String green_square_file_path = board_square_images_file_path + "amazing_square.png";
     private final String bad_square_file_path = board_square_images_file_path + "bad_square.png";
     private final String checkmate_square_file_path = board_square_images_file_path + "checkmate_square.png";
     private final String opposing_checkmate_square_file_path = board_square_images_file_path
@@ -33,6 +39,7 @@ public class AssistedFeatures {
     private ArrayList<ImageFactory> Hints_Images;
     private ArrayList<ImageFactory> Arrow_Images;
     private ImageFactory Tutorial_Image;
+    private JLabel TutorialTxt;
     public Board board;
 
     private ArrayList<Square> getOutOfCheckMoveHints;
@@ -54,6 +61,7 @@ public class AssistedFeatures {
      *              assisted features for
      */
     public AssistedFeatures(Board board) {
+
         this.board = board;
     }
 
@@ -70,12 +78,14 @@ public class AssistedFeatures {
         Hints_Images = new ArrayList<ImageFactory>();
         Arrow_Images = new ArrayList<ImageFactory>();
 
-        Tutorial_Image = new ImageFactory(default_tutorial, board.getSquare_Width() * 9, board.getSquare_Width() * 2.6);
+        TutorialTxt = new JLabel();
+        TutorialTxt = (!(board.checkForCheckMate() && board.PromotionButtonOn()))
+                ? getTutorialTxt(board.getActivePiece())
+                : null;
 
-        Tutorial_Image = (!(board.checkForCheckMate() || board.whiteIschecked() || board.blackIschecked()
-                || board.PromotionButtonOn()))
-                        ? new ImageFactory(default_tutorial, board.getSquare_Width() * 9, board.getSquare_Width() * 2.6)
-                        : null;
+                // <<< Un-Used: tutorial txt used rather than tutorial image >>>
+                /*
+        Tutorial_Image = new ImageFactory(default_tutorial, board.getSquare_Width() * 9, board.getSquare_Width() * 2.6);
 
         if (board.getActivePiece() != null) {
 
@@ -86,20 +96,13 @@ public class AssistedFeatures {
 
                 String tutorial_file_path = default_tutorial;
 
-                if (/* PlayerIsWhite && */board.getActivePiece().isWhite()) {
-                    tutorial_file_path = (!board.getActivePiece().is_promoted())
-                            ? tutorial_white_pieces_file_path + board.getActivePiece().getFilePath()
-                            : promoted_tutorial_white_pieces_file_path + board.getActivePiece().getFilePath();
-                } else if ((/* PlayerIsWhite==false && */board.getActivePiece().isBlack())) {
-                    tutorial_file_path = (!board.getActivePiece().is_promoted())
-                            ? tutorial_black_pieces_file_path + board.getActivePiece().getFilePath()
-                            : promoted_tutorial_black_pieces_file_path + board.getActivePiece().getFilePath();
-                }
+                // tutorial_file_path=getTutorialImage(); un-used feature
 
                 Tutorial_Image = new ImageFactory(tutorial_file_path, board.getSquare_Width() * 9,
                         board.getSquare_Width() * 2.6);
+
             }
-        }
+        }*/
 
         // add to hints array get out of check hints (if player hints are turned on and
         // player is checked)
@@ -120,10 +123,10 @@ public class AssistedFeatures {
                     for (Square moveSquare : getOutOfCheckMoveHints) {
 
                         if (board.getPiece(moveSquare.x, moveSquare.y) != null) {
-                            Hints_Images.add(new ImageFactory(great_square_file_path,
+                            Hints_Images.add(new ImageFactory(green_square_file_path,
                                     board.getSquare_Width() * moveSquare.x, board.getSquare_Width() * moveSquare.y));
                         } else {
-                            Hints_Images.add(new ImageFactory(good_square_file_path,
+                            Hints_Images.add(new ImageFactory(yellow_square_file_path,
                                     board.getSquare_Width() * moveSquare.x, board.getSquare_Width() * moveSquare.y));
                         }
                     }
@@ -151,7 +154,7 @@ public class AssistedFeatures {
                         if (((board.PlayerIsWhite() && captureablePiece.isWhite() == false)
                                 || (board.PlayerIsWhite() == false && captureablePiece.isWhite() == true))) {
 
-                            Hints_Images.add(new ImageFactory(great_square_file_path,
+                            Hints_Images.add(new ImageFactory(green_square_file_path,
                                     board.getSquare_Width() * captureablePiece.getX(),
                                     board.getSquare_Width() * captureablePiece.getY()));
                         }
@@ -172,18 +175,18 @@ public class AssistedFeatures {
                     }
                 }
 
-                // add to hints array all good, great and amazing possible moves when a piece is
+                // add to hints array all good and great possible moves when a piece is
                 // clicked (if not checked and hints setting is turned on)
 
                 if (board.getActivePiece() != null && ((board.getActivePiece().isWhite() && board.PlayerIsWhite())
                         || (board.getActivePiece().isBlack() && board.PlayerIsWhite() == false)
                                 && calcSafeMovesAndDrops(board.getActivePiece()) != null)
-                        && board.hintsON() && board.checkForCheckMate() == false) {
+                        && board.hintsON() && board.checkForCheckMate() == false  && board.checkForCheck() == false) {
 
                     for (Square square : calcSafeMovesAndDrops(board.getActivePiece())) {
 
                         Hints_Images
-                                .add(new ImageFactory(good_square_file_path, board.getSquare_Width() * square.x,
+                                .add(new ImageFactory(yellow_square_file_path, board.getSquare_Width() * square.x,
                                         board.getSquare_Width() * square.y));
                     }
 
@@ -191,7 +194,7 @@ public class AssistedFeatures {
                         for (Square square : calcGreatMovesAndDrops(board.getActivePiece())) {
 
                             Hints_Images
-                                    .add(new ImageFactory(great_square_file_path, board.getSquare_Width() * square.x,
+                                    .add(new ImageFactory(orange_square_file_path, board.getSquare_Width() * square.x,
                                             board.getSquare_Width() * square.y));
                         }
                     }
@@ -199,14 +202,15 @@ public class AssistedFeatures {
                         for (Square square : calcAmazingMovesAndDrops(board.getActivePiece())) {
 
                             Hints_Images
-                                    .add(new ImageFactory(amazing_square_file_path, board.getSquare_Width() * square.x,
+                                    .add(new ImageFactory(green_square_file_path, board.getSquare_Width() * square.x,
                                             board.getSquare_Width() * square.y));
                         }
                     }
                 }
 
-                // add to hints array possible checkmate hints
-
+                // add to hints array possible checkmate hints <<< Optimize slightly and add to final version >>>
+                
+                /*
                 boolean possibleCheckMate = (board.PlayerIsWhite()) ? checkForCheckMateMoves(board.getWhitePieces())
                         : checkForCheckMateMoves(board.getBlackPieces());
 
@@ -235,11 +239,11 @@ public class AssistedFeatures {
                                 board.getSquare_Width() * checkMateSquare.y));
                     }
                     for (Arrow arrow : checkmateArrows) {
-                        arrow.setCol("black");
+                        arrow.setCol("red");
                         Arrow_Images.add(new ImageFactory(arrow.getFilePath(),
                                 board.getSquare_Width() * arrow.getX(), board.getSquare_Width() * arrow.getY()));
                     }
-                }
+                }*/
             }
         }
 
@@ -251,12 +255,113 @@ public class AssistedFeatures {
     }
 
     /**
+     * The getTutorialImage method retrieves the corresponding tutorial image file
+     * path for a selected piece within the board instance
+     * 
+     * Currently Un-used Feature
+     * 
+     * @return the file path of the selected piece
+     */
+    public String getTutorialImage() {
+
+        String tutorial_file_path = default_tutorial;
+
+        if (/* PlayerIsWhite && */board.getActivePiece().isWhite()) {
+            tutorial_file_path = (!board.getActivePiece().is_promoted())
+                    ? tutorial_white_pieces_file_path + board.getActivePiece().getFilePath()
+                    : promoted_tutorial_white_pieces_file_path + board.getActivePiece().getFilePath();
+
+        } else if ((/* PlayerIsWhite==false && */board.getActivePiece().isBlack())) {
+            tutorial_file_path = (!board.getActivePiece().is_promoted())
+                    ? tutorial_black_pieces_file_path + board.getActivePiece().getFilePath()
+                    : promoted_tutorial_black_pieces_file_path + board.getActivePiece().getFilePath();
+        }
+
+        return tutorial_file_path;
+    }
+
+    /**
+     * The getTutorialTxt is used to generate the corresponding tutorial for the
+     * board instance, depending on if the tutorial setting is turned on and if a
+     * piece is clicked
+     * 
+     * @param piece The piece to get a tutorial text for, if null tutorial text is
+     *              default
+     * @return JLabel for corresponding tutorial
+     */
+    public JLabel getTutorialTxt(Piece piece) {
+
+        String text = "";
+        JLabel TutorialTxt = new JLabel();
+        TutorialTxt.setFont(new Font("Segoe Script", Font.PLAIN, 20));
+        TutorialTxt.setForeground(new Color(255, 255, 255));
+        TutorialTxt.setText(text);
+
+        if (piece == null || board.TutorialOn() == false) {
+            TutorialTxt.setBounds(600, 85, 475, 400);
+        } else {
+            TutorialTxt.setBounds(600, 85, 475, 400);
+        }
+        if (piece == null || board.TutorialOn() == false) {
+            text = (board.getClass() == Board.class)
+                    ? "<html> <center> Click a piece, once selected click a square to move / drop the piece too <br/> Click the piece again to de-select the piece <br/> </center> </html>"
+                    : "<html> <center> Click a piece, once selected click a square <br/> on the board to place <br/> Click the piece again to de-select the piece <br/> Press delete on a selected piece to remove piece</center> </html>";
+        } else if (piece.getClass() == Bishop.class) {
+            text = (piece.is_promoted())
+                    ? "<html> <center> The promoted bishop moves as a bishop and as a king. It is also known as a horse.<br/> Value: VERY HIGH <br/></center> </html>"
+                    : "<html> <center> The bishop can move any number of squares in a diagonal direction.<br/> Value: HIGH <br/> </center> </html>";
+        } else if (piece.getClass() == Pawn.class) {
+            text = (piece.is_promoted())
+                    ? "<html> <center> The promoted pawn can move one square orthogonally, or one square diagonally forward.<br/> Value: HIGH <br/></center> </html>"
+                    : "<html> <center> The pawn can move one square straight forward. It cannot retreat.<br/> Value: LOW <br/> </center> </html>";
+        } else if (piece.getClass() == GoldGeneral.class) {
+            text = "<html> <center> The Gold General can move one square orthogonally, or one square diagonally forward.<br/> Value: MEDIUM <br/> </center> </html>";
+        } else if (piece.getClass() == King.class) {
+            text = "<html> <center> The King can move one square in any direction, orthogonal or diagonal. </center> </html>";
+        } else if (piece.getClass() == Knight.class) {
+            text = (piece.is_promoted())
+                    ? "<html> <center> The promoted Knight can move one square orthogonally, or one square diagonally forward.<br/> Value: MEDIUM <br/> </center> </html>"
+                    : "<html> <center> The Knight jumps 2 squares orthogonal forward and one square orthogonal left or right. It can jump over pieces.<br/> Value: LOW <br/></center> </html>";
+        } else if (piece.getClass() == Lance.class) {
+            text = (piece.is_promoted())
+                    ? "<html> <center> The promoted pawn can move one square orthogonally, or one square diagonally forward.<br/> Value: MEDIUM <br/> </center> </html>"
+                    : "<html> <center> The Lance can move any number of squares in an orthogonal direction forward.<br/> Value: LOW <br/></center> </html>";
+        } else if (piece.getClass() == Rook.class) {
+            text = (piece.is_promoted())
+                    ? "<html> <center> The promoted Rook moves as a Rook and as a King. It is also called a dragon.<br/> Value: VERY HIGH <br/></center> </html>"
+                    : "<html> <center> The Rook can move any number of squares in an orthogonal direction.<br/> Value: HIGH <br/></center> </html>";
+        } else if (piece.getClass() == SilverGeneral.class) {
+            text = (piece.is_promoted())
+                    ? "<html> <center>  The promoted Silver General can move one square orthogonally, or one square diagonally forward.<br/> Value: MEDIUM <br/></center> </html>"
+                    : "<html> <center> The Silver General can move one square diagonally, or one square straight forward.<br/> Value: LOW <br/></center> </html>";
+        }
+
+        if (((board.getClass() == CustomBoard.class) && ((CustomBoard) board).InvalidLayoutPlayed())) {
+
+            TutorialTxt.setText("<html> <center> MUST place one white and one black king to play! </center> </html>");
+            TutorialTxt.setForeground(new Color(255, 0, 0));
+
+        } else {
+
+            TutorialTxt.setText(text);
+        }
+
+        return TutorialTxt;
+    }
+
+    public void set() {
+        TutorialTxt.setText("<html> <center> Must place one white and black king to play! </center> </html>");
+        TutorialTxt.setForeground(new Color(255, 0, 0));
+        TutorialTxt.setBounds(600, 75, 750, 400);
+    }
+
+    /**
      * The updateCaptureablePieces method iterates through all the pieces in the
      * game (within the All_Pieces array) to calculate if a piece is capturable: if
      * the capture of the piece results in giving the player an advanced position;
      * the capturablePieces array list is update accordingly
      */
-    void updateCaptureablePieces() { // [BUG] doesnt show capturable pieces at start of game // ++ make more
+    private void updateCaptureablePieces() { // [BUG] doesnt show capturable pieces at start of game // ++ make more
         // efficiant and optimize??
 
         capturablePieces = new ArrayList<Piece>(); // ++ test xray defeners and attackers exchanges with piece values
@@ -266,8 +371,9 @@ public class AssistedFeatures {
         // check for capturable pieces, add to list and update Jlabel text accordingly
 
         for (Piece piece : board.getAllPieces()) {
-
-            calcCaptureablePiece(piece);
+            if (piece.is_captured()==false){
+                calcCaptureablePiece(piece);
+            }
 
         }
 
@@ -323,9 +429,6 @@ public class AssistedFeatures {
 
         int exchangeValue = -1;
 
-        // test
-        piece.setExchangeValue(0);
-
         // calc xray attackersDefenders && xray Defenders
 
         ArrayList<Piece> Defenders = piece.getDefenders();
@@ -349,10 +452,6 @@ public class AssistedFeatures {
 
             }
         }
-
-        // updatePiecesAttackersAndDefenders();
-
-        piece.setExchangeValue(exchangeValue);
 
         if (exchangeValue >= 0) {
             capturablePieces.add(piece);
@@ -472,7 +571,7 @@ public class AssistedFeatures {
      * capture enemy capturable pieces (also contained within the captureable pieces
      * array)
      */
-    public void updateCaptureableArrowHints() {
+    private void updateCaptureableArrowHints() {
 
         arrows = new ArrayList<Arrow>();
 
@@ -480,7 +579,7 @@ public class AssistedFeatures {
 
             if ((capturablePiece.isBlack() && board.PlayerIsWhite())
                     || (capturablePiece.isWhite() && board.PlayerIsWhite() == false)) {
-                        
+
                 // add arrows to pieces toward possible opposing piece capture
 
                 if (capturablePiece.getCaptureWith().isEmpty() == false) {
@@ -510,7 +609,7 @@ public class AssistedFeatures {
      * squares and the arrows to the squares (indicating the move) are updated
      * accordingly
      */
-    public void updateGetOutOfCheckHints() { // ++ optimize
+    private void updateGetOutOfCheckHints() { // ++ optimize
 
         getOutOfCheckMoveHints = new ArrayList<Square>();
         getOutOfCheckDropHints = new ArrayList<Square>();
@@ -524,7 +623,7 @@ public class AssistedFeatures {
             for (Square square : board.getOutOfcheckMoves()) {
 
                 Piece piece = board.getOutOfcheckMovePiece().get(index);
-
+                // update move squares 
                 if (piece.getClass() == King.class && piece.canMove(square.x, square.y)) {
                     getOutOfCheckMoveHints.add(square);
                 }
@@ -536,7 +635,7 @@ public class AssistedFeatures {
                         && capturablePieces.contains(board.getPiece(square.x, square.y))) {
                     getOutOfCheckMoveHints.add(square);
                 }
-
+                // update arrows 
                 if (getOutOfCheckMoveHints.contains(square) && (board.getPiece(square.x, square.y) != null)) {// test
                     getOutOfCheckArrows
                             .add(new Arrow(Piece.getMoveDirection(piece.getX(), piece.getY(), square.x, square.y),
@@ -577,7 +676,7 @@ public class AssistedFeatures {
      * @return Array list of square that the piece could move to without giving the
      *         opposing colour player an advantage
      */
-    public ArrayList<Square> calcSafeMovesAndDrops(Piece piece) {
+    private ArrayList<Square> calcSafeMovesAndDrops(Piece piece) {
 
         ArrayList<Square> safeSquares = new ArrayList<Square>();
 
@@ -585,7 +684,10 @@ public class AssistedFeatures {
 
             for (Square square : piece.getMovementRange()) {
 
-                if (moveIsSafe(piece, square.x, square.y)) {
+                if ((piece.isWhite() && square.isContainedWithin(board.getBlackAttackingSquares()) == false)
+                        || (piece.isBlack() && square.isContainedWithin(board.getWhiteAttackingSquares()) == false)) {
+                    safeSquares.add(square);
+                } else if (moveIsSafe(piece, square.x, square.y)) {
                     safeSquares.add(square);
                 }
             }
@@ -607,7 +709,7 @@ public class AssistedFeatures {
      *         opposing colour player an advantage (the piece moving to the square
      *         is a safe move), false if not
      */
-    public boolean moveIsSafe(Piece piece, int x, int y) {
+    private boolean moveIsSafe(Piece piece, int x, int y) {
 
         if (board.getPiece(x, y) != null && board.getPiece(x, y).getCaptureWith() != null) {
             if (board.getPiece(x, y).getCaptureWith().contains(piece) == false) {
@@ -656,7 +758,7 @@ public class AssistedFeatures {
      * @return True if the players who makes the move / drop gains an advantage
      *         after making the move, false if not
      */
-    public ArrayList<Square> calcGreatMovesAndDrops(Piece piece) {
+    private ArrayList<Square> calcGreatMovesAndDrops(Piece piece) {
 
         ArrayList<Square> greatMoveSquares = new ArrayList<Square>();
 
@@ -664,10 +766,14 @@ public class AssistedFeatures {
 
             for (Square square : piece.getMovementRange()) {
 
-                if (moveThreatensPiece(piece, square.x, square.y) != null
-                        && moveThreatensPiece(piece, square.x, square.y).isEmpty() == false
-                        && moveIsSafe(piece, square.x, square.y)) {
-                    greatMoveSquares.add(square);
+                if ((piece.isWhite() && square.isContainedWithin(board.getBlackAttackingSquares()) == false)
+                        || (piece.isBlack() && square.isContainedWithin(board.getWhiteAttackingSquares()) == false)) { // optimization
+                    if (moveThreatensPiece(piece, square.x, square.y) != null
+                            && moveThreatensPiece(piece, square.x, square.y).isEmpty() == false
+                            && moveIsSafe(piece, square.x, square.y)) {
+                        greatMoveSquares.add(square);
+                    }
+
                 }
             }
         }
@@ -689,8 +795,8 @@ public class AssistedFeatures {
      * @return True if the players who makes the move / drop gains an signficant
      *         advantage after making the move, false if not
      */
-    public ArrayList<Square> calcAmazingMovesAndDrops(Piece piece) {
-
+    private ArrayList<Square> calcAmazingMovesAndDrops(Piece piece) {
+        
         ArrayList<Square> amazingMoveSquares = new ArrayList<Square>();
 
         if (piece.getMovementRange() != null) {
@@ -722,7 +828,7 @@ public class AssistedFeatures {
      * @return True if the piece moving to the specified position would result in an
      *         enemy piece being threatened, false if not
      */
-    public ArrayList<Piece> moveThreatensPiece(Piece piece, int x, int y) {
+    private ArrayList<Piece> moveThreatensPiece(Piece piece, int x, int y) {
 
         ArrayList<Piece> threatenedPiece = new ArrayList<Piece>();
 
@@ -772,7 +878,7 @@ public class AssistedFeatures {
      * @return true if their is a possible checkmate move within the movement range
      *         of the pieces, false if not
      */
-    public boolean checkForCheckMateMoves(ArrayList<Piece> pieces) { // ++ add promotion checkmates //++ if piece
+    private boolean checkForCheckMateMoves(ArrayList<Piece> pieces) { // ++ add promotion checkmates //++ if piece
         // blocking checkmate moves is it checkmate?4
         // ++ TEST
 
@@ -812,5 +918,14 @@ public class AssistedFeatures {
         } else {
             return true;
         }
+    }
+
+    /**
+     * getTutorialTxt accessor method
+     * 
+     * @return JLabel containing generated tutorial text for board instance
+     */
+    public JLabel getTutorialTxt() {
+        return TutorialTxt;
     }
 }

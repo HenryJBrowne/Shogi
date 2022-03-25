@@ -22,7 +22,6 @@ public class Board extends JComponent {
     public ArrayList<Piece> All_Pieces;
     public Piece Active_Piece;
 
-    private ImageFactory Background_Image;
     private ArrayList<ImageFactory> Static_Images;
     private ArrayList<ImageFactory> Piece_Images;
     private ArrayList<ImageFactory> AssistedImages;
@@ -41,9 +40,6 @@ public class Board extends JComponent {
     private boolean BlackIsChecked = false;
     private ArrayList<Piece> PiecesCheckingBlackKing;
     private ArrayList<Piece> PiecesCheckingWhiteKing;
-
-    private int Captured_White_Pieces = 0;
-    private int Captured_Black_Pieces = 0;
 
     private ArrayList<Square> whiteAttackingSquares;
     private ArrayList<Square> blackAttackingSquares;
@@ -80,12 +76,15 @@ public class Board extends JComponent {
     public Boolean InGameMenuIsDisplay = false;
 
     private ArrayList<ArrayList<Piece>> BoardStates;
+    private boolean revertWasMadeLastMove = false;
 
     private ArrayList<Square> grid;
 
     private BoardFrame boardFrame;
 
     private ArrayList<Piece> customPieces;
+    private AssistedFeatures assistedFeatures;
+    public JLabel TutorialTxt;
 
     /**
      * The Square class is used to create a square within the shogi grid
@@ -132,16 +131,10 @@ public class Board extends JComponent {
         for (int x = 0; x < ROWS; x++) {
             for (int y = 0; y < COLS; y++) {
 
-                grid.add(new Square(x, y)); // ++
+                grid.add(new Square(x, y)); 
             }
         }
     }
-
-    // ++
-    // [move pieces with least moves range to front of list to improve efficiancy
-    // when searching through list and checking pieces moves when checking for
-    // protected pieces...]
-    // ++
 
     /**
      * The initPieces method populates a list of white piece and a list of black
@@ -153,152 +146,142 @@ public class Board extends JComponent {
         if (customPieces == null) {
 
             // populate lists of pieces for default shogi game layout
-            /*
-             * White_Pieces.add(new King(4, 0, true, "King.png", this, false));
-             * White_Pieces.add(new Lance(0, 0, true, "Lance.png", this, false));
-             * White_Pieces.add(new Lance(8, 0, true, "Lance.png", this, false));
-             * White_Pieces.add(new Knight(1, 0, true, "Knight.png", this, false));
-             * White_Pieces.add(new Knight(7, 0, true, "Knight.png", this, false));
-             * White_Pieces.add(new SilverGeneral(2, 0, true, "SilverGeneral.png", this,
-             * false));
-             * White_Pieces.add(new SilverGeneral(6, 0, true, "SilverGeneral.png", this,
-             * false));
-             * White_Pieces.add(new GoldGeneral(3, 0, true, "GoldGeneral.png", this,
-             * false));
-             * White_Pieces.add(new GoldGeneral(5, 0, true, "GoldGeneral.png", this,
-             * false));
-             * White_Pieces.add(new Bishop(7, 1, true, "Bishop.png", this, false));
-             * White_Pieces.add(new Rook(1, 1, true, "Rook.png", this, false));
-             * White_Pieces.add(new Pawn(0, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(1, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(2, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(3, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(4, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(5, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(6, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(7, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(8, 2, true, "Pawn.png", this, false));
-             * Black_Pieces.add(new King(4, 8, false, "King.png", this, false));
-             * Black_Pieces.add(new Lance(0, 8, false, "Lance.png", this, false));
-             * Black_Pieces.add(new Lance(8, 8, false, "Lance.png", this, false));
-             * Black_Pieces.add(new Knight(1, 8, false, "Knight.png", this, false));
-             * Black_Pieces.add(new Knight(7, 8, false, "Knight.png", this, false));
-             * Black_Pieces.add(new SilverGeneral(2, 8, false, "SilverGeneral.png", this,
-             * false));
-             * Black_Pieces.add(new SilverGeneral(6, 8, false, "SilverGeneral.png", this,
-             * false));
-             * Black_Pieces.add(new GoldGeneral(3, 8, false, "GoldGeneral.png", this,
-             * false));
-             * Black_Pieces.add(new GoldGeneral(5, 8, false, "GoldGeneral.png", this,
-             * false));
-             * Black_Pieces.add(new Bishop(1, 7, false, "Bishop.png", this, false));
-             * Black_Pieces.add(new Rook(7, 7, false, "Rook.png", this, false));
-             * Black_Pieces.add(new Pawn(0, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(1, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(2, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(3, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(4, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(5, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(6, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(7, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(8, 6, false, "Pawn.png", this, false));
-             */
 
-            // [testing pieces]
-
-            White_Pieces.add(new King(5, 4, true, "King.png", this, false));
-
-            /*
-             * White_Pieces.add(new Lance(0, 0, true, "Lance.png", this, false));
-             * White_Pieces.add(new Lance(8, 0, true, "Lance.png", this, false));
-             * 
-             * White_Pieces.add(new Knight(1, 0, true, "Knight.png", this, false));
-             * White_Pieces.add(new Knight(7, 0, true, "Knight.png", this, false));
-             * 
-             * White_Pieces.add(new SilverGeneral(2, 0, true, "SilverGeneral.png", this,
-             * false));
-             * White_Pieces.add(new SilverGeneral(6, 0, true, "SilverGeneral.png", this,
-             * false));
-             * 
-             * White_Pieces.add(new GoldGeneral(3, 0, true, "GoldGeneral.png", this,
-             * false));
-             * White_Pieces.add(new GoldGeneral(5, 0, true, "GoldGeneral.png", this,
-             * false));
-             */
-
+            White_Pieces.add(new King(4, 0, true, "King.png", this, false));
+            White_Pieces.add(new Lance(0, 0, true, "Lance.png", this, false));
+            White_Pieces.add(new Lance(8, 0, true, "Lance.png", this, false));
+            White_Pieces.add(new Knight(1, 0, true, "Knight.png", this, false));
+            White_Pieces.add(new Knight(7, 0, true, "Knight.png", this, false));
+            White_Pieces.add(new SilverGeneral(2, 0, true, "SilverGeneral.png", this, false));
+            White_Pieces.add(new SilverGeneral(6, 0, true, "SilverGeneral.png", this, false));
+            White_Pieces.add(new GoldGeneral(3, 0, true, "GoldGeneral.png", this, false));
+            White_Pieces.add(new GoldGeneral(5, 0, true, "GoldGeneral.png", this, false));
             White_Pieces.add(new Bishop(7, 1, true, "Bishop.png", this, false));
             White_Pieces.add(new Rook(1, 1, true, "Rook.png", this, false));
-
-            /*
-             * White_Pieces.add(new Pawn(0, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(1, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(2, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(3, 2, true, "Pawn.png", this, false));
-             * White_Pieces.add(new Pawn(4, 2, true, "Pawn.png", this, false));
-             */
-            White_Pieces.add(new Pawn(5, 2, true, "Pawn.png", this, true));
-
-            White_Pieces.add(new Pawn(6, 2, true, "Pawn.png", this, true));
-            White_Pieces.add(new Pawn(7, 2, true, "Pawn.png", this, true));
-            White_Pieces.add(new Pawn(8, 2, true, "Pawn.png", this, true));
+            White_Pieces.add(new Pawn(0, 2, true, "Pawn.png", this, false));
+            White_Pieces.add(new Pawn(1, 2, true, "Pawn.png", this, false));
+            White_Pieces.add(new Pawn(2, 2, true, "Pawn.png", this, false));
+            White_Pieces.add(new Pawn(3, 2, true, "Pawn.png", this, false));
+            White_Pieces.add(new Pawn(4, 2, true, "Pawn.png", this, false));
+            White_Pieces.add(new Pawn(5, 2, true, "Pawn.png", this, false));
+            White_Pieces.add(new Pawn(6, 2, true, "Pawn.png", this, false));
+            White_Pieces.add(new Pawn(7, 2, true, "Pawn.png", this, false));
+            White_Pieces.add(new Pawn(8, 2, true, "Pawn.png", this, false));
 
             Black_Pieces.add(new King(4, 8, false, "King.png", this, false));
-
             Black_Pieces.add(new Lance(0, 8, false, "Lance.png", this, false));
-
             Black_Pieces.add(new Lance(8, 8, false, "Lance.png", this, false));
-
             Black_Pieces.add(new Knight(1, 8, false, "Knight.png", this, false));
-
-            /*
-             * Black_Pieces.add(new Knight(7, 8, false, "Knight.png", this, false));
-             * 
-             * Black_Pieces.add(new SilverGeneral(2, 8, false, "SilverGeneral.png", this,
-             * false));
-             * Black_Pieces.add(new SilverGeneral(6, 8, false, "SilverGeneral.png", this,
-             * false));
-             * 
-             * Black_Pieces.add(new GoldGeneral(3, 8, false, "GoldGeneral.png", this,
-             * false));
-             * Black_Pieces.add(new GoldGeneral(5, 8, false, "GoldGeneral.png", this,
-             * false));
-             */
-
+            Black_Pieces.add(new Knight(7, 8, false, "Knight.png", this, false));
+            Black_Pieces.add(new SilverGeneral(2, 8, false, "SilverGeneral.png", this, false));
+            Black_Pieces.add(new SilverGeneral(6, 8, false, "SilverGeneral.png", this, false));
+            Black_Pieces.add(new GoldGeneral(3, 8, false, "GoldGeneral.png", this, false));
+            Black_Pieces.add(new GoldGeneral(5, 8, false, "GoldGeneral.png", this, false));
             Black_Pieces.add(new Bishop(1, 7, false, "Bishop.png", this, false));
             Black_Pieces.add(new Rook(7, 7, false, "Rook.png", this, false));
+            Black_Pieces.add(new Pawn(0, 6, false, "Pawn.png", this, false));
+            Black_Pieces.add(new Pawn(1, 6, false, "Pawn.png", this, false));
+            Black_Pieces.add(new Pawn(2, 6, false, "Pawn.png", this, false));
+            Black_Pieces.add(new Pawn(3, 6, false, "Pawn.png", this, false));
+            Black_Pieces.add(new Pawn(4, 6, false, "Pawn.png", this, false));
+            Black_Pieces.add(new Pawn(5, 6, false, "Pawn.png", this, false));
+            Black_Pieces.add(new Pawn(6, 6, false, "Pawn.png", this, false));
+            Black_Pieces.add(new Pawn(7, 6, false, "Pawn.png", this, false));
+            Black_Pieces.add(new Pawn(8, 6, false, "Pawn.png", this, false));
 
-            /*
-             * Black_Pieces.add(new Pawn(0, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(1, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(2, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(3, 6, false, "Pawn.png", this, false));
-             * 
-             */Black_Pieces.add(new Pawn(4, 6, false, "Pawn.png", this, true));
-            Black_Pieces.add(new Pawn(5, 6, false, "Pawn.png", this, true));
-            Black_Pieces.add(new Pawn(6, 6, false, "Pawn.png", this, true));
-            /*
-             * Black_Pieces.add(new Pawn(7, 6, false, "Pawn.png", this, false));
-             * Black_Pieces.add(new Pawn(8, 6, false, "Pawn.png", this, false));
-             */
             All_Pieces.addAll(White_Pieces);
             All_Pieces.addAll(Black_Pieces);
         } else {
 
-            // populate lists of pieces for a customized shogi game layout
+            // populate lists of captured pieces for customized shogi game layout 
+            /*
+            int[][] pieceCounter= new int[2][7];
 
-            All_Pieces.addAll(customPieces);
+            for (Piece piece : customPieces){
 
-            for (Piece piece : All_Pieces) {
-
-                piece.setBoard(this);
-
-                if (piece.isWhite()) {
-                    White_Pieces.add(piece);
-                } else {
-                    Black_Pieces.add(piece);
+                int col=(piece.isWhite())?0:1;
+                
+                if (piece.getClass()==Pawn.class){
+                    pieceCounter[col][0]=pieceCounter[col][0]+1;
+                }
+                if (piece.getClass()==Rook.class){
+                    pieceCounter[col][1]=pieceCounter[col][1]+1;
+                }
+                if (piece.getClass()==Bishop.class){
+                    pieceCounter[col][2]=pieceCounter[col][2]+1;
+                }
+                if (piece.getClass()==GoldGeneral.class){
+                    pieceCounter[col][3]=pieceCounter[col][3]+1;
+                }
+                if (piece.getClass()==SilverGeneral.class){
+                    pieceCounter[col][4]=pieceCounter[col][4]+1;
+                }
+                if (piece.getClass()==Knight.class){
+                    pieceCounter[col][5]=pieceCounter[col][5]+1;
+                }
+                if (piece.getClass()==Lance.class){
+                    pieceCounter[col][6]=pieceCounter[col][6]+1;
                 }
             }
+            
+            int[] size= new int[7];
+            size[0]=9; size[1]=1; size[2]=1; size[3]=2; size[4]=2; size[5]=2; size[6]=2;
+
+            while (pieceCounter[0][0] < size[0] || pieceCounter[0][1] < size[1] ||pieceCounter[0][2] < size[2] ||pieceCounter[0][3] < size[3] ||pieceCounter[0][4] < size[4] ||pieceCounter[0][5] < size[5] ||pieceCounter[0][6] < size[6]||pieceCounter[1][0] < size[0] || pieceCounter[1][1] < size[1] ||pieceCounter[1][2] < size[2] ||pieceCounter[1][3] < size[3] ||pieceCounter[1][4] < size[4] ||pieceCounter[1][5] < size[5] ||pieceCounter[1][6] < size[6] ){
+                
+                ArrayList<Piece> wPieces= new ArrayList<Piece>();
+                ArrayList<Piece> bPieces= new ArrayList<Piece>();
+
+                wPieces.add(new Pawn(0, 0, true, "Pawn.png", this, false));//0
+                bPieces.add(new Pawn(0, 0, false, "Pawn.png", this, false));
+                wPieces.add(new Rook(0, 0, true, "Rook.png", this, false));//1
+                bPieces.add(new Rook(0, 0, false, "Rook.png", this, false));
+                wPieces.add(new Bishop(0, 0, true, "Bishop.png", this, false));//2
+                bPieces.add(new Bishop(0, 0, false, "Bishop.png", this, false));
+                wPieces.add(new GoldGeneral(0, 0, true, "GoldGeneral.png", this, false));//3
+                bPieces.add(new GoldGeneral(0, 0, false, "GoldGeneral.png", this, false));
+                wPieces.add(new SilverGeneral(0, 0, true, "SilverGeneral.png", this, false));//4
+                bPieces.add(new SilverGeneral(0, 0, false, "SilverGeneral.png", this, false));
+                bPieces.add(new Knight(0, 0, false, "Knight.png", this, false));//5
+                wPieces.add(new Knight(0, 0, true, "Knight.png", this, false));
+                bPieces.add(new Lance(0, 0, false, "Lance.png", this, false));//6
+                wPieces.add(new Lance(0, 0, true, "Lance.png", this, false));
+
+                for (int piece=0; piece<7;piece=piece+1){
+                    for (int col=0; col<2; col=col+1){
+
+                        ArrayList<Piece> pieces;
+
+                        if (pieceCounter[col][piece] < size[piece] && pieceCounter[0][piece]+pieceCounter[1][piece] < size[piece]*2){
+                            if (col==0){
+                                pieces=bPieces;
+                                White_Pieces.add(pieces.get(piece));
+                            }else{
+                                pieces=wPieces;
+                                Black_Pieces.add(pieces.get(piece));
+                            }
+                            pieces.get(piece).CapturePiece();
+                            pieceCounter[col][piece]=pieceCounter[col][piece]+1;
+                        }
+                    }
+                } 
+            }
+                   
+         */ All_Pieces.addAll(customPieces);
         }
+        
+          // populate lists of pieces for customized shogi game layout
+
+          for (Piece piece : All_Pieces) {
+
+              piece.setBoard(this);
+
+              if (piece.isWhite()) {
+                  White_Pieces.add(piece);
+              } else {
+                  Black_Pieces.add(piece);
+              }
+          }
 
         try {
             addBoardState();
@@ -356,6 +339,9 @@ public class Board extends JComponent {
         PiecesCheckingWhiteKing = new ArrayList<Piece>();
         PiecesCheckingBlackKing = new ArrayList<Piece>();
 
+        TutorialTxt = new JLabel();
+        this.add(TutorialTxt);
+
         initPieces();
 
         this.setBackground(new Color(0, 0, 0));
@@ -380,13 +366,18 @@ public class Board extends JComponent {
     public void drawBoard() { // ++ ADD TUTORIAL TXT TO SAY IF PIECE IS BLOCKING CHECK
 
         Static_Images = new ArrayList<ImageFactory>();
-        Dynamic_Images=new ArrayList<ImageFactory>();
+        Dynamic_Images = new ArrayList<ImageFactory>();
         Piece_Images = new ArrayList<ImageFactory>();
         AssistedImages = new ArrayList<ImageFactory>();
 
         // add background
 
-        Static_Images.add(new ImageFactory(background_image_file_path, 0.0, 0.0));
+        if (checkForCheckMate() || whiteIschecked() || blackIschecked()) {
+
+            Static_Images.add(new ImageFactory(red_background_image_file_path, 0, 0));
+        } else {
+            Static_Images.add(new ImageFactory(background_image_file_path, 0.0, 0.0));
+        }
 
         // add menu button
 
@@ -433,8 +424,6 @@ public class Board extends JComponent {
 
         else if (whiteIschecked() || blackIschecked()) {
 
-            Background_Image = new ImageFactory(red_background_image_file_path, 0, 0);
-
             if (Active_Piece == null && PromotionButtonOn == false) {
                 Dynamic_Images.add(new ImageFactory(check_file_path, Square_Width * 9, Square_Width * 2.6));
             }
@@ -449,10 +438,23 @@ public class Board extends JComponent {
             }
         }
 
-        // generate and add assisted images (hints and tutorials)
+        // generate and add assisted images (if hints or tutorials are on)
 
-        AssistedFeatures assistedFeatures = new AssistedFeatures(this);
-        AssistedImages.addAll(assistedFeatures.generateAssistedImages());
+        if (HintsOn || TutorialOn) {
+            assistedFeatures = new AssistedFeatures(this);
+            AssistedImages.addAll(assistedFeatures.generateAssistedImages());
+
+            this.remove(TutorialTxt);
+            if (!(InGameMenuIsDisplay || checkForCheckMate() || PromotionButtonOn())) {
+                TutorialTxt = assistedFeatures.getTutorialTxt();
+                ;
+                this.add(TutorialTxt);
+            }
+            // alternate between check display and tutorial display when piece is clicked 
+            if (whiteIschecked() || blackIschecked() && Active_Piece==null){
+                this.remove(TutorialTxt);
+            }
+        }
 
         this.repaint();
     }
@@ -478,8 +480,8 @@ public class Board extends JComponent {
         ArrayList<ImageFactory> All_Images = new ArrayList<ImageFactory>();
 
         All_Images.addAll(Static_Images);
-        All_Images.addAll(Dynamic_Images);
         All_Images.addAll(Piece_Images);
+        All_Images.addAll(Dynamic_Images);
         All_Images.addAll(AssistedImages);
 
         if (InGameMenuIsDisplay) {
@@ -534,7 +536,7 @@ public class Board extends JComponent {
     }
 
     /**
-     * The updatePiecesAttackersAndDefenders iterates through all the peices within
+     * The updatePiecesAttackersAndDefenders iterates through all the pieces within
      * the game (in the All_Pieces array) and updates the amount of pieces defending
      * and attacking each piece, these updates values are set and stored within the
      * piece objects instance
@@ -542,8 +544,9 @@ public class Board extends JComponent {
     public void updatePiecesAttackersAndDefenders() {
 
         for (Piece piece : All_Pieces) {
-            piece.setAttackers(new ArrayList<Piece>());
-            piece.setDefenders(new ArrayList<Piece>());
+            piece.resetAttackers();
+            ;
+            piece.resetDefenders();
         }
 
         for (int x = 0; x < ROWS; x++) {
@@ -579,19 +582,16 @@ public class Board extends JComponent {
     private void updateProtectedPieces() {
 
         for (Piece piece : All_Pieces) {
-            if (piece.getDefenders().size() > 0) {
 
-                for (Piece defender : piece.getDefenders()) {
-
-                    if (defender.getClass() == King.class && isKingProtectingPiece(piece) == false
-                            && piece.getDefenders().size() == 1) {
-                        piece.set_protected(false);
-                    } else {
-                        piece.set_protected(true);
-                    }
-                }
-            } else {
+            if (piece.getDefenders() == null || piece.getDefenders().isEmpty()) {
                 piece.set_protected(false);
+            } else if (piece.getDefenders().size() > 1) {
+                piece.set_protected(true);
+            } else if (piece.getDefenders().get(0).getClass() == King.class && isKingProtectingPiece(piece) == false
+                    && piece.getDefenders().size() == 1) {
+                piece.set_protected(false);
+            } else {
+                piece.set_protected(true);
             }
         }
     }
@@ -613,29 +613,11 @@ public class Board extends JComponent {
             return true;
         } else {
 
-            // if the piece has one attacker check if other pieces are behind and defending
-            // the attacker,
-            // if so check if this piece would be defending this piece if it captured Piece
-
-            Piece attacker = piece.getAttackers().get(0);
-
-            String direction = Piece.getMoveDirection(attacker.getX(), attacker.getY(), piece.getX(), piece.getY());
-
-            for (Piece attackerDefender : attacker.getDefenders()) {
-
-                if (attackerDefender.getMovementRange(attackerDefender.getX(), attackerDefender.getY(),
-                        direction) != null) {
-
-                    for (Square Square : attackerDefender.getMovementRange(attackerDefender.getX(),
-                            attackerDefender.getY(), direction)) {
-
-                        if (piece.getX() == Square.x && piece.getY() == Square.y) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            return true;
+            // if the piece has 1 attacker check if their are any xray attacker behind that
+            // piece
+            AssistedFeatures assistedFeatures = new AssistedFeatures(this);
+            ArrayList<Piece> xrayAttackers = assistedFeatures.getXrayAttackers(piece);
+            return (xrayAttackers.size() >= 1) ? false : true;
         }
     }
 
@@ -679,7 +661,7 @@ public class Board extends JComponent {
                 String movementDirection = Piece.getMoveDirection(opposingPiece.getX(), opposingPiece.getY(),
                         kingCoord.x, kingCoord.y);
 
-                ArrayList<Square> pMovementRange = opposingPiece.getMovementRange(opposingPiece.getX(),
+                ArrayList<Square> pMovementRange = opposingPiece.getDisplacementRange(opposingPiece.getX(),
                         opposingPiece.getY(), movementDirection);
 
                 boolean kingInPath = false;
@@ -786,7 +768,7 @@ public class Board extends JComponent {
         whites_turn = (moveCounter % 2 == 1) ? false : true;
 
         updatePiecesBlockingCheck();
-        updateAttackingSquares(); // <- ++ fix method?
+        updateAttackingSquares();
         updatePiecesAttackersAndDefenders();
         updateProtectedPieces();
         // updateCaptureablePieces();
@@ -842,19 +824,16 @@ public class Board extends JComponent {
             }
         }
 
-        if (WhiteIsChecked == true || BlackIsChecked == true) {
-            return true;
-        }
-
-        return false;
+        return (WhiteIsChecked == true || BlackIsChecked == true) ? true : false;
     }
 
     /**
+     * The checkForCheck method checks if any player is in check
      * 
-     * @return
+     * @return True if a player is in check, false if not
      */
-    public boolean checkForCheck(){
-        return (checkForCheck(getKing(White_Pieces))||checkForCheck(getKing(Black_Pieces)))?true:false;
+    public boolean checkForCheck() {
+        return (checkForCheck(getKing(White_Pieces)) || checkForCheck(getKing(Black_Pieces))) ? true : false;
     }
 
     /**
@@ -866,7 +845,7 @@ public class Board extends JComponent {
      * @return Array list of squares between the king and the king attacker / piece
      *         checking the king
      */
-    public ArrayList<Square> getSquaresThatBlockCheck(Piece king) { 
+    public ArrayList<Square> getSquaresThatBlockCheck(Piece king) {
 
         ArrayList<Square> blockingSquares = new ArrayList<Square>();
 
@@ -895,75 +874,7 @@ public class Board extends JComponent {
         return blockingSquares;
     }
 
-    /**
-     * The CapturedPeice method moves a captured piece to a captured position
-     * respective of other captured pieces within the game window and updates the
-     * pieces captured status / instance variable accordinly
-     * 
-     * @param piece The piece that is being set to captured
-     */
-    private void CapturedPeice(Piece piece) { // ++ [make more efficient...?]
-
-        int ROW = 0;
-        int COL = 0;
-        Captured_White_Pieces = 0;
-        Captured_Black_Pieces = 0;
-
-        piece.promote(false);
-
-        // set piece to captured
-
-        piece.captured(true);
-
-        // change the colour of the piece catured so it can be dropped
-
-        if (piece.isWhite()) {
-            White_Pieces.remove(piece);
-            Black_Pieces.add(piece);
-        } else {
-            Black_Pieces.remove(piece);
-            White_Pieces.add(piece);
-        }
-        piece.changeColour();
-
-        // organise the rows of captured peices
-
-        if (piece.isWhite() == true) {
-
-            ROW = 0;
-            COL = 8;
-            for (Piece p : White_Pieces) {
-                if (p.is_captured() == true) {
-                    COL = COL + 1;
-                    if (Captured_White_Pieces % 4 == 0 && Captured_White_Pieces != 0) {
-                        ROW = ROW + 1;
-                        COL = 9;
-                    }
-                    Captured_White_Pieces = Captured_White_Pieces + 1;
-                }
-            }
-            piece.setX(COL);
-            piece.setY(ROW);
-
-        } else {
-
-            ROW = 8;
-            COL = 8;
-            for (Piece p : Black_Pieces) {
-                if (p.is_captured() == true) {
-                    COL = COL + 1;
-                    if (Captured_Black_Pieces % 4 == 0 && Captured_Black_Pieces != 0) {
-                        ROW = ROW - 1;
-                        COL = 9;
-                    }
-                    Captured_Black_Pieces = Captured_Black_Pieces + 1;
-                }
-            }
-            piece.setX(COL);
-            piece.setY(ROW);
-        }
-    }
-
+  
     /**
      * The MouseListener class inherits methods from the MouseAdapter allowing the
      * board class to receive mouse input
@@ -999,15 +910,6 @@ public class Board extends JComponent {
         int Clicked_Row = mouse_Y / Square_Width;
 
         Piece Clicked_Piece = getPiece(Clicked_Column, Clicked_Row);
-
-        if (getPiece(Clicked_Column, Clicked_Row) != null) {
-            // System.out.println(getXrayDefenders((getPiece(Clicked_Column,Clicked_Row))));
-
-            System.out.println((getPiece(Clicked_Column, Clicked_Row).getExchangeValue()));
-            // System.out.println(getXrayAttackers(getPiece(Clicked_Column, Clicked_Row)));
-            // System.out.println(getPiece(Clicked_Column,
-            // Clicked_Row).getDefenders().size());
-        }
 
         // in game menu
 
@@ -1055,7 +957,7 @@ public class Board extends JComponent {
                     // piece so active piece can be there
                     if (Clicked_Piece != null) {
 
-                        CapturedPeice(Clicked_Piece);
+                        Clicked_Piece.CapturePiece();
 
                     }
                     // do move
@@ -1118,6 +1020,12 @@ public class Board extends JComponent {
 
                     moveCounter = moveCounter + 1;
 
+                    if (revertWasMadeLastMove) {
+                        resetBoardStates();
+                    }
+
+                    revertWasMadeLastMove = false;
+
                     try {
                         addBoardState();
                     } catch (CloneNotSupportedException e1) {
@@ -1179,13 +1087,21 @@ public class Board extends JComponent {
     }
 
     /**
+     * The resetBoardStates is used to empty / re-initilize the array list of array
+     * lists of pieces that stores each state / layout of peices at each turn on the
+     * board
+     */
+    public void resetBoardStates() {
+        BoardStates = new ArrayList<ArrayList<Piece>>();
+    }
+
+    /**
      * The revertLastMove method is used to set the current board state / layout of
      * peices to the previous state (stored within the BoardStates array)
      */
-    public void revertLastMove() { // ++ [bug] when user reverts move, moves again and reverts that move... doesnt
-                                   // work when reverting promotion move
+    public void revertLastMove() { 
 
-        if (BoardStates != null && moveCounter != 0) {
+        if (BoardStates != null && moveCounter != 0 && BoardStates.size() > 1) {
 
             White_Pieces.clear();
             Black_Pieces.clear();
@@ -1204,6 +1120,8 @@ public class Board extends JComponent {
                     Black_Pieces.add(piece);
                 }
             }
+
+            revertWasMadeLastMove = true;
 
             moveCounter = moveCounter - 1;
 
@@ -1425,6 +1343,7 @@ public class Board extends JComponent {
      * @return Piece object that is of King class instance
      */
     public Piece getKing(ArrayList<Piece> Pieces) {
+
         for (Piece piece : Pieces) {
             if (piece.getClass().equals(King.class)) {
                 return piece;
@@ -1567,5 +1486,4 @@ public class Board extends JComponent {
     public boolean PromotionButtonOn() {
         return PromotionButtonOn;
     }
-
 }

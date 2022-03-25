@@ -15,8 +15,8 @@ public class Menu extends JComponent {
     private final String Menu_Images_File_path = "images" + File.separator + "menu" + File.separator;
     private final String Background_Image_File_Path = Menu_Images_File_path + "Background.png";
     private final String Play_Button_File_Path = Menu_Images_File_path + "PlayButton.png";
-    private final String Controls_Button_File_Path = Menu_Images_File_path + "ControlsButton.png"; // ++ change to info
-                                                                                                   // button
+    private final String Info_Button_File_Path = Menu_Images_File_path + "ControlsButton.png"; // ++ change to info
+                                                                                               // button
     private final String Quit_Button_File_Path = Menu_Images_File_path + "QuitButton.png";
     private final String Hints_ButtonON_File_Path = Menu_Images_File_path + "HintsONButton.png";
     private final String Hints_ButtonOFF_File_Path = Menu_Images_File_path + "HintsOffButton.png";
@@ -26,19 +26,26 @@ public class Menu extends JComponent {
     private final String Black_Button_File_Path = Menu_Images_File_path + "BlackButton.png";
     private final String Custom_Board_Button_File_Path = Menu_Images_File_path + "CustomBoardButton.png";
 
+    private final String InfoPage_Images_File_Path = Menu_Images_File_path + File.separator + "InfoPage"
+            + File.separator;
+    private final String InfoPage_BackButton_File_Path = InfoPage_Images_File_Path + "BackButton.png";
+
     private String Hints_Button_File_Path;
     private String Tutorial_Button_File_Path;
     private String PlayerCol_Button_File_Path;
 
-    //public boolean PlayPressed = false; // encapsulate and add accessor methods?...
     public boolean PlayerIsWhite = true;
     public boolean HintsOn = true;
     public boolean TutorialOn = true;
+    private boolean infoON = false;
 
     private ArrayList<Piece> customPieces;
     private boolean turn_is_white = true;
 
     private MenuFrame Frame;
+
+    private JLabel Txt;
+    private JLabel Txt2;
 
     /**
      * The Menu constuctor creates a menu instance where the user can select setting
@@ -50,6 +57,12 @@ public class Menu extends JComponent {
 
         Menu_Images = new ArrayList<ImageFactory>();
         this.Frame = Frame;
+        
+        Txt = new JLabel();
+        this.add(Txt);
+
+        Txt2 = new JLabel();
+        this.add(Txt2);
 
         this.setBackground(new Color(255, 255, 255));
         this.setPreferredSize(new Dimension(1100, 580));
@@ -72,41 +85,66 @@ public class Menu extends JComponent {
 
         Menu_Images.clear();
 
-        // add static buttons
+        if (infoON) {
+            Txt.setBounds(100, 100, 900, 400);
+            Txt.setForeground(new Color(255, 255, 255));
+            Txt.setFont(new Font("Segoe Script", Font.PLAIN, 13));
+            Txt.setText(
+                    "<html> <center> <br> <b> Game: </b></br> <br>To play click a piece to select the piece, click it again to de-select. Once a piece is selected click a square to move / drop the piece to that square <br> A player cannot make moves / drops that are illegal: the move is not in the pieces legal movement range or the move checks the players own king, if in check the player must move out of check. </br><br> Once a player has no legal moves and the king is checked it is checkmate!  </br></br> <br> <b>Hints: </b></br></center> When hints are depending on your colour it will show if your pieces are capturable and need to mvoe with a red square, it wil show if opposing pieces are capturable with a green square. It will show possible check mate moves with a gold sqaure, possible opposing checkmate moves with a red and black square. Once a piece is selected it will show good moves as yellow squares, great moves as orange squares and amazing moves as green squares.  </html>");
+            
+            this.add(Txt2);
+            Txt2.setBounds(100, 275, 650, 400);
+            Txt2.setForeground(new Color(255, 255, 255));
+            Txt2.setFont(new Font("Segoe Script", Font.PLAIN, 13));
+            Txt2.setText(
+                            "<html> <center> <br> <b> Tutorials: </b></br> <br> When tutorials are selected within the menu, when playing the game each time a piece is selected, a textual display on the right of the screen is shown for that piece indicating the legal movement range for that piece </br></html>");
+            Menu_Images.add(new ImageFactory(InfoPage_BackButton_File_Path, 780, 460));
 
-        Menu_Images.add(new ImageFactory(Play_Button_File_Path, 75, 275));
-
-        Menu_Images.add(new ImageFactory(Controls_Button_File_Path, 400, 275));
-
-        Menu_Images.add(new ImageFactory(Quit_Button_File_Path, 725, 275));
-
-        // add non static buttons
-
-        if (HintsOn) {
-            Hints_Button_File_Path = Hints_ButtonON_File_Path;
         } else {
-            Hints_Button_File_Path = Hints_ButtonOFF_File_Path;
+            this.remove(Txt2);
+            Txt.setBounds(420, 300, 600, 400);
+            Txt.setFont(new Font("Segoe Script", Font.PLAIN, 25));
+            Txt.setForeground(new Color(255, 255, 255));
+            Txt.setText("<html> Custom Board allows you to create custom or mid game shogi scenarios to play...</html>");
+            
+ 
+            // add static buttons
+
+            Menu_Images.add(new ImageFactory(Play_Button_File_Path, 75, 225));
+
+            Menu_Images.add(new ImageFactory(Info_Button_File_Path, 400, 225));
+
+            Menu_Images.add(new ImageFactory(Quit_Button_File_Path, 725, 225));
+
+            // add non static buttons
+
+            if (HintsOn) {
+                Hints_Button_File_Path = Hints_ButtonON_File_Path;
+            } else {
+                Hints_Button_File_Path = Hints_ButtonOFF_File_Path;
+            }
+
+            Menu_Images.add(new ImageFactory(Hints_Button_File_Path, 75, 340));
+
+            if (TutorialOn) {
+                Tutorial_Button_File_Path = Tutorial_ButtonON_File_Path;
+            } else {
+                Tutorial_Button_File_Path = Tutorial_ButtonOFF_File_Path;
+            }
+
+            Menu_Images.add(new ImageFactory(Tutorial_Button_File_Path, 400, 340));
+
+            if (PlayerIsWhite) {
+                PlayerCol_Button_File_Path = White_Button_File_Path;
+            } else {
+                PlayerCol_Button_File_Path = Black_Button_File_Path;
+            }
+
+            Menu_Images.add(new ImageFactory(PlayerCol_Button_File_Path, 725, 340));
+
+            Menu_Images.add(new ImageFactory(Custom_Board_Button_File_Path, 75, 455));
+
         }
-
-        Menu_Images.add(new ImageFactory(Hints_Button_File_Path, 75, 400));
-
-        if (TutorialOn) {
-            Tutorial_Button_File_Path = Tutorial_ButtonON_File_Path;
-        } else {
-            Tutorial_Button_File_Path = Tutorial_ButtonOFF_File_Path;
-        }
-
-        Menu_Images.add(new ImageFactory(Tutorial_Button_File_Path, 400, 400));
-
-        if (PlayerIsWhite) {
-            PlayerCol_Button_File_Path = White_Button_File_Path;
-        } else {
-            PlayerCol_Button_File_Path = Black_Button_File_Path;
-        }
-
-        Menu_Images.add(new ImageFactory(PlayerCol_Button_File_Path, 725, 400));
-
-        Menu_Images.add(new ImageFactory(Custom_Board_Button_File_Path, 250, 200));
 
         this.repaint();
     }
@@ -159,8 +197,8 @@ public class Menu extends JComponent {
 
         for (ImageFactory image : Menu_Images) {
 
-            if (mouse_X > image.getRect().getX() && mouse_X < image.getRect().getX() + image.getWidth()
-                    && mouse_Y > image.getRect().getY() && mouse_Y < image.getRect().getY() + image.getHeight()) {
+            if (mouse_X > image.getRect().getX() && mouse_X < image.getRect().getX() + image.getImage().getWidth(null)
+                    && mouse_Y > image.getRect().getY() && mouse_Y < image.getRect().getY() + image.getImage().getHeight(null)) {
 
                 // check what button was pressed
 
@@ -170,8 +208,8 @@ public class Menu extends JComponent {
                     BoardFrame boardframe = new BoardFrame(this, false); // use accessor methods?
                     boardframe.setVisible(true);
                 }
-                if (image.getFilePath() == Controls_Button_File_Path) {
-                    // + +
+                if (image.getFilePath() == Info_Button_File_Path) {
+                    infoON = toggle(infoON);
                 }
                 if (image.getFilePath() == Quit_Button_File_Path) {
                     System.exit(1);
@@ -189,6 +227,9 @@ public class Menu extends JComponent {
                     BoardFrame boardframe = new BoardFrame(this, true);
                     boardframe.setVisible(true);
                 }
+                if (image.getFilePath() == InfoPage_BackButton_File_Path) {
+                    infoON = toggle(infoON);
+                }
             }
         }
 
@@ -203,7 +244,7 @@ public class Menu extends JComponent {
         Graphics2D g2 = (Graphics2D) g;
         addBackground(g2);
         addImages(g2);
-        
+
     }
 
     /**
@@ -235,6 +276,7 @@ public class Menu extends JComponent {
 
     /**
      * getPlayerCol accessor method
+     * 
      * @return True if the user has selected to play as white pieces, false if not
      */
     public Boolean getPlayerCol() {
@@ -243,6 +285,7 @@ public class Menu extends JComponent {
 
     /**
      * getHintsOn accessor method
+     * 
      * @return True if the user has selected to play with hints on, false if not
      */
     public Boolean getHintsOn() {
@@ -251,6 +294,7 @@ public class Menu extends JComponent {
 
     /**
      * getTutorialOn
+     * 
      * @return True if the user has selected to play with tutorials on, false if not
      */
     public Boolean getTutorialOn() {
@@ -258,8 +302,11 @@ public class Menu extends JComponent {
     }
 
     /**
-     * setCustomPieces set method (ie used if the user selects to customize a board layout)
-     * @param customPieces_ Array list of pieces created to determin a custom board layout of pieces 
+     * setCustomPieces set method (ie used if the user selects to customize a board
+     * layout)
+     * 
+     * @param customPieces_ Array list of pieces created to determin a custom board
+     *                      layout of pieces
      */
     public void setCustomPieces(ArrayList<Piece> customPieces_) {
         customPieces = customPieces_;
@@ -267,7 +314,10 @@ public class Menu extends JComponent {
 
     /**
      * getCustoPieces accessor method
-     * @return Arraylist of pieces that determin a custom board layout of pieces created by the user, null if the user has not customized a board layout
+     * 
+     * @return Arraylist of pieces that determin a custom board layout of pieces
+     *         created by the user, null if the user has not customized a board
+     *         layout
      */
     public ArrayList<Piece> getCustomPieces() {
         return customPieces;
@@ -275,7 +325,9 @@ public class Menu extends JComponent {
 
     /**
      * setPlayerTurn set method
-     * @param turn_is_white_ True if the player has selected the first turn to be white piece to move, false if not
+     * 
+     * @param turn_is_white_ True if the player has selected the first turn to be
+     *                       white piece to move, false if not
      */
     public void setPlayerTurn(Boolean turn_is_white_) {
         turn_is_white = turn_is_white_;
@@ -283,7 +335,9 @@ public class Menu extends JComponent {
 
     /**
      * getPlayerTurn accessor method
-     * @return True if the player has selected the first turn to be white piece to move, false if not
+     * 
+     * @return True if the player has selected the first turn to be white piece to
+     *         move, false if not
      */
     public boolean getPlayerTurn() {
         return turn_is_white;
@@ -291,6 +345,7 @@ public class Menu extends JComponent {
 
     /**
      * getMenuFrame accessor method
+     * 
      * @return Menuframe that this menu component is contained within
      */
     public MenuFrame getMenuFrame() {

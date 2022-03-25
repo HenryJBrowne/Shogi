@@ -6,8 +6,7 @@ import javax.swing.JFrame;
 
 public class MenuFrame extends JFrame {
 
-    private Component component;
-    public Menu menu;       
+    private Component component; 
 
     /**
      * The MenuFrame constructor method is used to intilize the jframe window

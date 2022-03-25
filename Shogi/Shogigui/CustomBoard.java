@@ -1,12 +1,9 @@
 package Shogigui;
 
 import Shogigui.pieces.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
-
-import javax.swing.*;
 
 public class CustomBoard extends Board implements Cloneable {
 
@@ -22,7 +19,7 @@ public class CustomBoard extends Board implements Cloneable {
     private BoardFrame boardFrame;
     private Menu menu;
 
-    private JLabel Txt;
+    private boolean InvalidLayoutPlayed = false;
 
     /**
      * The CustomBoard constuctor method is used to create a custom board instance
@@ -34,17 +31,10 @@ public class CustomBoard extends Board implements Cloneable {
      *                   selected
      */
     public CustomBoard(BoardFrame boardFrame, Menu menu) {
-        super(false, false, false, boardFrame, null, false);
+        super(false, false, true, boardFrame, null, false);
 
         this.boardFrame = boardFrame;
         this.menu = menu;
-
-        Txt = new JLabel();
-        Txt.setBounds(600, 75, 750, 400);
-        Txt.setFont(new Font("Segoe Script", Font.PLAIN, 20));
-        Txt.setForeground(new Color(255, 255, 255));
-        Txt.setText(
-                "<html> <center> Click a piece, once selected click a square <br/> on the board to place <br/> Click the piece again to de-select the piece <br/> Press delete on selected piece to remove piece</center> </html>");
 
         update();
 
@@ -74,6 +64,7 @@ public class CustomBoard extends Board implements Cloneable {
         White_Pieces.add(new Bishop(10, 2, true, "Bishop.png", this, true));
         White_Pieces.add(new Rook(11, 2, true, "Rook.png", this, true));
         White_Pieces.add(new Pawn(12, 2, true, "Pawn.png", this, true));
+
         Black_Pieces.add(new King(9, 6, false, "King.png", this, false));
         Black_Pieces.add(new Lance(10, 6, false, "Lance.png", this, false));
         Black_Pieces.add(new Knight(11, 6, false, "Knight.png", this, false));
@@ -108,10 +99,7 @@ public class CustomBoard extends Board implements Cloneable {
 
         cbImages = new ArrayList<ImageFactory>();
 
-        if (InGameMenuIsDisplay) {
-            this.remove(Txt);
-        } else {
-            this.add(Txt);
+        if (!(InGameMenuIsDisplay)) {
 
             cbImages.add(new ImageFactory(play_button_file_path, 910, 500));
 
@@ -127,7 +115,7 @@ public class CustomBoard extends Board implements Cloneable {
 
     }
 
-    @Override
+    @Override 
     public void mousePressed(MouseEvent e) {
 
         int mouse_X = e.getX();
@@ -135,21 +123,18 @@ public class CustomBoard extends Board implements Cloneable {
         int Clicked_Column = mouse_X / Square_Width;
         int Clicked_Row = mouse_Y / Square_Width;
 
-        Txt.setText(
-                "<html> <center> Click a piece, once selected click a square <br/> on the board to place <br/> Click the piece again to de-select the piece <br/> Press delete on selected piece to remove piece</center> </html>");
-        Txt.setForeground(new Color(255, 255, 255));
-        Txt.setBounds(600, 75, 750, 400);
+        InvalidLayoutPlayed = false;
 
         for (ImageFactory image : cbImages) {
 
-            if (mouse_X > image.getRect().getX() && mouse_X < image.getRect().getX() + image.getWidth()
-                    && mouse_Y > image.getRect().getY() && mouse_Y < image.getRect().getY() + image.getHeight()) {
+            if (mouse_X > image.getRect().getX() && mouse_X < image.getRect().getX() + image.getImage().getWidth(null)
+                    && mouse_Y > image.getRect().getY() && mouse_Y < image.getRect().getY() + image.getImage().getHeight(null)) {
 
                 // check what button was pressed
 
                 if (image.getFilePath() == play_button_file_path) {
 
-                    // ++ check two kings have been placed
+                    // check two kings have been placed before allowing user to play scenario
 
                     int whiteKingPlaced = 0;
                     int blackKingPlaced = 0;
@@ -170,10 +155,10 @@ public class CustomBoard extends Board implements Cloneable {
                     if (blackKingPlaced == 1 && whiteKingPlaced == 1) {
                         boardFrame.dispose();
                         new BoardFrame(menu, false);
+
                     } else {
-                        Txt.setText("<html> <center> Must place one white and black king to play! </center> </html>");
-                        Txt.setForeground(new Color(255, 0, 0));
-                        Txt.setBounds(600, 75, 750, 400);
+
+                        InvalidLayoutPlayed = true;
                     }
 
                 }
@@ -239,14 +224,10 @@ public class CustomBoard extends Board implements Cloneable {
                 } else {
                     Black_Pieces.add(newPiece);
                 }
-                Active_Piece.captured(false);
-
                 Active_Piece = null;
             }
         }
         update();
-
-        // updateBoardStatus();
 
         updateCustomStatus();
 
@@ -269,6 +250,7 @@ public class CustomBoard extends Board implements Cloneable {
         for (Piece piece : All_Pieces) {
 
             if (piece.moveIsOutOfBounds(piece.getX(), piece.getY()) == false) {
+                piece.captured(false);
                 customPieces.add(piece);
             }
         }
@@ -276,6 +258,15 @@ public class CustomBoard extends Board implements Cloneable {
         menu.setCustomPieces(customPieces);
 
         menu.setPlayerTurn(turn_is_white);
+    }
 
+    /**
+     * InvalidLayoutPlayed acceess method
+     * 
+     * @return True if user tried to play cusotom scenario with invalid piece
+     *         layout, false if not
+     */
+    public boolean InvalidLayoutPlayed() {
+        return InvalidLayoutPlayed;
     }
 }

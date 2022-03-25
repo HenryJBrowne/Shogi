@@ -25,8 +25,6 @@ public class Piece implements Cloneable {
     boolean hasPromotion = true;
     ArrayList<String> rangedAttackDirections = new ArrayList<String>();
 
-    int exchangeValue = 0;
-
     /**
      * The piece constructor is used to initilize a piece object on the shogi board
      * 
@@ -341,8 +339,7 @@ public class Piece implements Cloneable {
     /**
      * The canBeDroppedToStopCheck method is used to check if a piece being dropped
      * in a specified position results in the king of the same colour no longer
-     * being
-     * directly threatened by an enemy piece / checked
+     * being directly threatened by an enemy piece / checked
      * 
      * @param destination_x The location of the position on the grids x axis of the
      *                      possible drop
@@ -478,7 +475,7 @@ public class Piece implements Cloneable {
         if (Direction.contains("W")) {
             ChangeInX = -1;
         }
-        if (!(ChangeInX == 0 && ChangeInY == 0)) {
+        if (!(ChangeInX == 0 && ChangeInY == 0)) {  // <- bug fix
 
             Square Square = board.new Square(this.getX(), this.getY());
 
@@ -576,7 +573,7 @@ public class Piece implements Cloneable {
     }
 
     /**
-     * The getMovementRange method is used to retrieve all possible squares in a
+     * The getDisplacementRange method is used to retrieve all possible squares in a
      * pieces (xray) movement range set direction from a specified position on the
      * board grid; the move DOES NOT have to be a LEGAL move, THIS METHOD DISREGARDS
      * PIECES IN THE WAY OF THE MOVE (checks for xray moves)
@@ -594,7 +591,7 @@ public class Piece implements Cloneable {
      *         from a specified position in set direction, null if piece cannot move
      *         from this position
      */
-    public ArrayList<Board.Square> getMovementRange(int xpos, int ypos, String movementDirection) {
+    public ArrayList<Board.Square> getDisplacementRange(int xpos, int ypos, String movementDirection) {
 
         ArrayList<Board.Square> Squares = new ArrayList<Board.Square>();
 
@@ -606,6 +603,78 @@ public class Piece implements Cloneable {
 
         return Squares;
     }
+
+      /**
+     * The CapturedPeice method moves a captured piece to a captured position
+     * respective of other captured pieces within the game window and updates the
+     * pieces captured status / instance variable accordinly
+     * 
+     * @param piece The piece that is being set to captured
+     */
+    public void CapturePiece() { // ++ fix bug optimize 
+
+        // set piece to un-promoted if promoted 
+
+        this.promote(false);
+
+        int Captured_White_Pieces = 0;
+        int Captured_Black_Pieces = 0;
+
+        this.promote(false);
+
+        // set piece to captured
+
+        this.captured(true);
+
+        // change the colour of the piece catured so it can be dropped
+
+        if (this.isWhite()) {
+            board.getWhitePieces().remove(this);
+            board.getBlackPieces().add(this);
+        } else {
+            board.getBlackPieces().remove(this);
+            board.getWhitePieces().add(this);
+        }
+        this.invertColour();
+
+        // organise the rows of captured peices
+
+        if (this.isWhite() == true) {
+
+            int ROW = 0;
+            int COL = 8;
+            for (Piece p : board.getWhitePieces()) {
+                if (p.is_captured() == true) {
+                    COL = COL + 1;
+                    if (Captured_White_Pieces % 4 == 0 && Captured_White_Pieces != 0) {
+                        ROW = ROW + 1;
+                        COL = 9;
+                    }
+                    Captured_White_Pieces = Captured_White_Pieces + 1;
+                }
+            }
+            this.setX(COL);
+            this.setY(ROW);
+
+        } else {
+
+            int ROW = 8;
+            int COL = 8;
+            for (Piece p : board.getBlackPieces()) {
+                if (p.is_captured() == true) {
+                    COL = COL + 1;
+                    if (Captured_Black_Pieces % 4 == 0 && Captured_Black_Pieces != 0) {
+                        ROW = ROW - 1;
+                        COL = 9;
+                    }
+                    Captured_Black_Pieces = Captured_Black_Pieces + 1;
+                }
+            }
+            this.setX(COL);
+            this.setY(ROW);
+        }
+    }
+
 
     /**
      * getFilePath accessor method
@@ -647,7 +716,7 @@ public class Piece implements Cloneable {
      * changeColour method used to invert the colour of a piece (ie black piece to
      * white piece)
      */
-    public void changeColour() {
+    public void invertColour() {
         is_white = (this.isWhite()) ? false : true;
 
     }
@@ -864,8 +933,8 @@ public class Piece implements Cloneable {
      * 
      * @param Attackers Array list of opposing pieces that can capture this piece
      */
-    public void setAttackers(ArrayList<Piece> Attackers) {
-        this.Attackers = Attackers;
+    public void resetAttackers() {
+        this.Attackers = new ArrayList<Piece>();
     }
 
     /**
@@ -874,8 +943,8 @@ public class Piece implements Cloneable {
      * 
      * @param Defenders Array list of opposing pieces that can capture this piece
      */
-    public void setDefenders(ArrayList<Piece> Defenders) {
-        this.Defenders = Defenders;
+    public void resetDefenders() {
+        this.Defenders = new ArrayList<Piece>();
     }
 
     /**
@@ -969,16 +1038,6 @@ public class Piece implements Cloneable {
      */
     public boolean hasPromotion() {
         return hasPromotion;
-    }
-
-    // testing 
-
-    public void setExchangeValue(int value) {
-        this.exchangeValue = value;
-    }
-
-    public int getExchangeValue() {
-        return exchangeValue;
     }
 
 }

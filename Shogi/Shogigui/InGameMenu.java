@@ -61,8 +61,8 @@ public class InGameMenu {
 
         for (ImageFactory image : inGame_Menu_Images) {
 
-            if (mouse_X > image.getRect().getX() && mouse_X < image.getRect().getX() + image.getWidth()
-                    && mouse_Y > image.getRect().getY() && mouse_Y < image.getRect().getY() + image.getHeight()) {
+            if (mouse_X > image.getRect().getX() && mouse_X < image.getRect().getX() + image.getImage().getWidth(null)
+                    && mouse_Y > image.getRect().getY() && mouse_Y < image.getRect().getY() + image.getImage().getHeight(null)) {
 
                 // check what button was pressed
 

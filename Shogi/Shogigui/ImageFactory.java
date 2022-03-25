@@ -4,8 +4,6 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.*;
 import java.io.*;
-import java.util.ArrayList;
-
 import javax.imageio.*;
 
 class ImageFactory { //add interface?     ++ check with factory class design pattern
@@ -29,10 +27,6 @@ class ImageFactory { //add interface?     ++ check with factory class design pat
                 (int) bounds.getMaxY(),
                 0, 0, image.getWidth(null), image.getHeight(null), null);
     }
-    public void drawImages(ArrayList<ImageFactory> Images) {
-        
-        // ++
-    }
 
     public Image loadImage(String image_file_path) {
         try {
@@ -46,7 +40,6 @@ class ImageFactory { //add interface?     ++ check with factory class design pat
     {
         return this.image;
     }
-
     public Rectangle2D getRect()
     {
         return this.rect;
@@ -54,12 +47,5 @@ class ImageFactory { //add interface?     ++ check with factory class design pat
     public String getFilePath()
     {
         return this.image_file_path;
-    }
-    public int getWidth()
-    {
-        return this.image.getWidth(null);
-    }
-    public int getHeight(){
-        return this.image.getHeight(null);
     }
 }
