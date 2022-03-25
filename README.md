@@ -3,5 +3,5 @@ Many more features are also availiable within the program.
 
 Run using the main method found within the Shogigui class...
 
-Piece images used within this program were taken from Ka-hu/shogi-pieces: Shogi (Japanese Chess) pieces and boards (github.com) 
+Piece images used within this program were taken from https://github.com/Ka-hu/shogi-pieces pieces and boards (github.com) 
 -following the copy-right guidelines stated
