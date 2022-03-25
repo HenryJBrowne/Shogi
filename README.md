@@ -2,3 +2,6 @@ This program can be used to play the shogi board game with all the features of t
 Many more features are also availiable within the program.
 
 Run using the main method found within the Shogigui class...
+
+Piece images used within this program were taken from Ka-hu/shogi-pieces: Shogi (Japanese Chess) pieces and boards (github.com) 
+-following the copy-right guidelines stated
