@@ -2,6 +2,12 @@ package Shogigui.pieces;
 
 import Shogigui.Board;
 
+/**
+ * The Knight class is used to generate Knight Piece objects within the program: 
+ * with all the properties corresponding to this piece
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class Knight extends Piece {
 
     public Knight(int x, int y, boolean is_white, String file_path, Board board,

@@ -4,6 +4,12 @@ import Shogigui.Board;
 
 import java.util.ArrayList;
 
+/**
+ * The King class is used to generate King Piece objects within the program: 
+ * with all the properties corresponding to this piece
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class King extends Piece {
 
     public King(int x, int y, boolean is_white, String file_path, Board board,

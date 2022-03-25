@@ -8,7 +8,11 @@ import java.util.*;
 import javax.swing.*;
 
 /**
- * The Board class...
+ * The Board class is used to generate the shogi game graphical user interface
+ * allowing the user to play the game with all the functionalities of the shogi
+ * game with added assisted features (if selected within the menu)
+ * 
+ * @Author Henry Browne – 37733273
  */
 public class Board extends JComponent {
 
@@ -131,7 +135,7 @@ public class Board extends JComponent {
         for (int x = 0; x < ROWS; x++) {
             for (int y = 0; y < COLS; y++) {
 
-                grid.add(new Square(x, y)); 
+                grid.add(new Square(x, y));
             }
         }
     }
@@ -193,95 +197,104 @@ public class Board extends JComponent {
             All_Pieces.addAll(Black_Pieces);
         } else {
 
-            // populate lists of captured pieces for customized shogi game layout 
+            // populate lists of captured pieces for customized shogi game layout
             /*
-            int[][] pieceCounter= new int[2][7];
-
-            for (Piece piece : customPieces){
-
-                int col=(piece.isWhite())?0:1;
-                
-                if (piece.getClass()==Pawn.class){
-                    pieceCounter[col][0]=pieceCounter[col][0]+1;
-                }
-                if (piece.getClass()==Rook.class){
-                    pieceCounter[col][1]=pieceCounter[col][1]+1;
-                }
-                if (piece.getClass()==Bishop.class){
-                    pieceCounter[col][2]=pieceCounter[col][2]+1;
-                }
-                if (piece.getClass()==GoldGeneral.class){
-                    pieceCounter[col][3]=pieceCounter[col][3]+1;
-                }
-                if (piece.getClass()==SilverGeneral.class){
-                    pieceCounter[col][4]=pieceCounter[col][4]+1;
-                }
-                if (piece.getClass()==Knight.class){
-                    pieceCounter[col][5]=pieceCounter[col][5]+1;
-                }
-                if (piece.getClass()==Lance.class){
-                    pieceCounter[col][6]=pieceCounter[col][6]+1;
-                }
-            }
-            
-            int[] size= new int[7];
-            size[0]=9; size[1]=1; size[2]=1; size[3]=2; size[4]=2; size[5]=2; size[6]=2;
-
-            while (pieceCounter[0][0] < size[0] || pieceCounter[0][1] < size[1] ||pieceCounter[0][2] < size[2] ||pieceCounter[0][3] < size[3] ||pieceCounter[0][4] < size[4] ||pieceCounter[0][5] < size[5] ||pieceCounter[0][6] < size[6]||pieceCounter[1][0] < size[0] || pieceCounter[1][1] < size[1] ||pieceCounter[1][2] < size[2] ||pieceCounter[1][3] < size[3] ||pieceCounter[1][4] < size[4] ||pieceCounter[1][5] < size[5] ||pieceCounter[1][6] < size[6] ){
-                
-                ArrayList<Piece> wPieces= new ArrayList<Piece>();
-                ArrayList<Piece> bPieces= new ArrayList<Piece>();
-
-                wPieces.add(new Pawn(0, 0, true, "Pawn.png", this, false));//0
-                bPieces.add(new Pawn(0, 0, false, "Pawn.png", this, false));
-                wPieces.add(new Rook(0, 0, true, "Rook.png", this, false));//1
-                bPieces.add(new Rook(0, 0, false, "Rook.png", this, false));
-                wPieces.add(new Bishop(0, 0, true, "Bishop.png", this, false));//2
-                bPieces.add(new Bishop(0, 0, false, "Bishop.png", this, false));
-                wPieces.add(new GoldGeneral(0, 0, true, "GoldGeneral.png", this, false));//3
-                bPieces.add(new GoldGeneral(0, 0, false, "GoldGeneral.png", this, false));
-                wPieces.add(new SilverGeneral(0, 0, true, "SilverGeneral.png", this, false));//4
-                bPieces.add(new SilverGeneral(0, 0, false, "SilverGeneral.png", this, false));
-                bPieces.add(new Knight(0, 0, false, "Knight.png", this, false));//5
-                wPieces.add(new Knight(0, 0, true, "Knight.png", this, false));
-                bPieces.add(new Lance(0, 0, false, "Lance.png", this, false));//6
-                wPieces.add(new Lance(0, 0, true, "Lance.png", this, false));
-
-                for (int piece=0; piece<7;piece=piece+1){
-                    for (int col=0; col<2; col=col+1){
-
-                        ArrayList<Piece> pieces;
-
-                        if (pieceCounter[col][piece] < size[piece] && pieceCounter[0][piece]+pieceCounter[1][piece] < size[piece]*2){
-                            if (col==0){
-                                pieces=bPieces;
-                                White_Pieces.add(pieces.get(piece));
-                            }else{
-                                pieces=wPieces;
-                                Black_Pieces.add(pieces.get(piece));
-                            }
-                            pieces.get(piece).CapturePiece();
-                            pieceCounter[col][piece]=pieceCounter[col][piece]+1;
-                        }
-                    }
-                } 
-            }
-                   
-         */ All_Pieces.addAll(customPieces);
+             * int[][] pieceCounter= new int[2][7];
+             * 
+             * for (Piece piece : customPieces){
+             * 
+             * int col=(piece.isWhite())?0:1;
+             * 
+             * if (piece.getClass()==Pawn.class){
+             * pieceCounter[col][0]=pieceCounter[col][0]+1;
+             * }
+             * if (piece.getClass()==Rook.class){
+             * pieceCounter[col][1]=pieceCounter[col][1]+1;
+             * }
+             * if (piece.getClass()==Bishop.class){
+             * pieceCounter[col][2]=pieceCounter[col][2]+1;
+             * }
+             * if (piece.getClass()==GoldGeneral.class){
+             * pieceCounter[col][3]=pieceCounter[col][3]+1;
+             * }
+             * if (piece.getClass()==SilverGeneral.class){
+             * pieceCounter[col][4]=pieceCounter[col][4]+1;
+             * }
+             * if (piece.getClass()==Knight.class){
+             * pieceCounter[col][5]=pieceCounter[col][5]+1;
+             * }
+             * if (piece.getClass()==Lance.class){
+             * pieceCounter[col][6]=pieceCounter[col][6]+1;
+             * }
+             * }
+             * 
+             * int[] size= new int[7];
+             * size[0]=9; size[1]=1; size[2]=1; size[3]=2; size[4]=2; size[5]=2; size[6]=2;
+             * 
+             * while (pieceCounter[0][0] < size[0] || pieceCounter[0][1] < size[1]
+             * ||pieceCounter[0][2] < size[2] ||pieceCounter[0][3] < size[3]
+             * ||pieceCounter[0][4] < size[4] ||pieceCounter[0][5] < size[5]
+             * ||pieceCounter[0][6] < size[6]||pieceCounter[1][0] < size[0] ||
+             * pieceCounter[1][1] < size[1] ||pieceCounter[1][2] < size[2]
+             * ||pieceCounter[1][3] < size[3] ||pieceCounter[1][4] < size[4]
+             * ||pieceCounter[1][5] < size[5] ||pieceCounter[1][6] < size[6] ){
+             * 
+             * ArrayList<Piece> wPieces= new ArrayList<Piece>();
+             * ArrayList<Piece> bPieces= new ArrayList<Piece>();
+             * 
+             * wPieces.add(new Pawn(0, 0, true, "Pawn.png", this, false));//0
+             * bPieces.add(new Pawn(0, 0, false, "Pawn.png", this, false));
+             * wPieces.add(new Rook(0, 0, true, "Rook.png", this, false));//1
+             * bPieces.add(new Rook(0, 0, false, "Rook.png", this, false));
+             * wPieces.add(new Bishop(0, 0, true, "Bishop.png", this, false));//2
+             * bPieces.add(new Bishop(0, 0, false, "Bishop.png", this, false));
+             * wPieces.add(new GoldGeneral(0, 0, true, "GoldGeneral.png", this, false));//3
+             * bPieces.add(new GoldGeneral(0, 0, false, "GoldGeneral.png", this, false));
+             * wPieces.add(new SilverGeneral(0, 0, true, "SilverGeneral.png", this,
+             * false));//4
+             * bPieces.add(new SilverGeneral(0, 0, false, "SilverGeneral.png", this,
+             * false));
+             * bPieces.add(new Knight(0, 0, false, "Knight.png", this, false));//5
+             * wPieces.add(new Knight(0, 0, true, "Knight.png", this, false));
+             * bPieces.add(new Lance(0, 0, false, "Lance.png", this, false));//6
+             * wPieces.add(new Lance(0, 0, true, "Lance.png", this, false));
+             * 
+             * for (int piece=0; piece<7;piece=piece+1){
+             * for (int col=0; col<2; col=col+1){
+             * 
+             * ArrayList<Piece> pieces;
+             * 
+             * if (pieceCounter[col][piece] < size[piece] &&
+             * pieceCounter[0][piece]+pieceCounter[1][piece] < size[piece]*2){
+             * if (col==0){
+             * pieces=bPieces;
+             * White_Pieces.add(pieces.get(piece));
+             * }else{
+             * pieces=wPieces;
+             * Black_Pieces.add(pieces.get(piece));
+             * }
+             * pieces.get(piece).CapturePiece();
+             * pieceCounter[col][piece]=pieceCounter[col][piece]+1;
+             * }
+             * }
+             * }
+             * }
+             * 
+             */ All_Pieces.addAll(customPieces);
         }
-        
-          // populate lists of pieces for customized shogi game layout
 
-          for (Piece piece : All_Pieces) {
+        // populate lists of pieces for customized shogi game layout
 
-              piece.setBoard(this);
+        for (Piece piece : All_Pieces) {
 
-              if (piece.isWhite()) {
-                  White_Pieces.add(piece);
-              } else {
-                  Black_Pieces.add(piece);
-              }
-          }
+            piece.setBoard(this);
+
+            if (piece.isWhite()) {
+                White_Pieces.add(piece);
+            } else {
+                Black_Pieces.add(piece);
+            }
+        }
 
         try {
             addBoardState();
@@ -450,8 +463,8 @@ public class Board extends JComponent {
                 ;
                 this.add(TutorialTxt);
             }
-            // alternate between check display and tutorial display when piece is clicked 
-            if (whiteIschecked() || blackIschecked() && Active_Piece==null){
+            // alternate between check display and tutorial display when piece is clicked
+            if (whiteIschecked() || blackIschecked() && Active_Piece == null) {
                 this.remove(TutorialTxt);
             }
         }
@@ -874,7 +887,6 @@ public class Board extends JComponent {
         return blockingSquares;
     }
 
-  
     /**
      * The MouseListener class inherits methods from the MouseAdapter allowing the
      * board class to receive mouse input
@@ -1099,7 +1111,7 @@ public class Board extends JComponent {
      * The revertLastMove method is used to set the current board state / layout of
      * peices to the previous state (stored within the BoardStates array)
      */
-    public void revertLastMove() { 
+    public void revertLastMove() {
 
         if (BoardStates != null && moveCounter != 0 && BoardStates.size() > 1) {
 

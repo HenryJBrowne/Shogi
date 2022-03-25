@@ -5,6 +5,12 @@ import java.util.ArrayList;
 import Shogigui.Board;
 import Shogigui.Board.Square;
 
+/**
+ * The Piece class is used as a parent class for piece child classes that are
+ * used within a shogi Board instance
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class Piece implements Cloneable {
     private int x;
     private int y;
@@ -116,7 +122,8 @@ public class Piece implements Cloneable {
         }
         return true;
     }
-     /**
+
+    /**
      * The isLegalMove method checks if a piece moving to a specificed position
      * would result in an illegal moves taking place
      * 
@@ -239,8 +246,8 @@ public class Piece implements Cloneable {
      * The isCheckMateMove method calculates whether a piece moving to a position
      * would result in checkmate
      * 
-     * @param x     The x axis position of the potential checkmate position
-     * @param y     The y axis position of the poteniial checkmate position
+     * @param x The x axis position of the potential checkmate position
+     * @param y The y axis position of the poteniial checkmate position
      * @return true if moving the piece to the position specified would result in
      *         checkmate, false if not
      */
@@ -251,7 +258,7 @@ public class Piece implements Cloneable {
         int currentXPos = this.getX();
         int currentYPos = this.getY();
 
-        if (board.getPiece(x, y) != null && board.getPiece(x, y).getClass() == King.class) { 
+        if (board.getPiece(x, y) != null && board.getPiece(x, y).getClass() == King.class) {
             return false;
         }
 
@@ -443,7 +450,7 @@ public class Piece implements Cloneable {
 
         return movementRange;
     }
-    
+
     /**
      * The getSquaresInDirection method is used to retreive all the squares from a
      * piece position to the end of the playing board grid in a specified direction
@@ -475,7 +482,7 @@ public class Piece implements Cloneable {
         if (Direction.contains("W")) {
             ChangeInX = -1;
         }
-        if (!(ChangeInX == 0 && ChangeInY == 0)) {  // <- bug fix
+        if (!(ChangeInX == 0 && ChangeInY == 0)) { // <- bug fix
 
             Square Square = board.new Square(this.getX(), this.getY());
 
@@ -604,16 +611,16 @@ public class Piece implements Cloneable {
         return Squares;
     }
 
-      /**
+    /**
      * The CapturedPeice method moves a captured piece to a captured position
      * respective of other captured pieces within the game window and updates the
      * pieces captured status / instance variable accordinly
      * 
      * @param piece The piece that is being set to captured
      */
-    public void CapturePiece() { // ++ fix bug optimize 
+    public void CapturePiece() { // ++ fix bug optimize
 
-        // set piece to un-promoted if promoted 
+        // set piece to un-promoted if promoted
 
         this.promote(false);
 
@@ -674,7 +681,6 @@ public class Piece implements Cloneable {
             this.setY(ROW);
         }
     }
-
 
     /**
      * getFilePath accessor method

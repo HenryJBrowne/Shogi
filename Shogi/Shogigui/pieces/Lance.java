@@ -2,6 +2,12 @@ package Shogigui.pieces;
 
 import Shogigui.Board;
 
+/**
+ * The Lance class is used to generate Lance Piece objects within the program: 
+ * with all the properties corresponding to this piece
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class Lance extends Piece {
 
     public Lance(int x, int y, boolean is_white, String file_path, Board board,

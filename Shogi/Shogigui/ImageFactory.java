@@ -6,7 +6,13 @@ import java.awt.image.*;
 import java.io.*;
 import javax.imageio.*;
 
-class ImageFactory { //add interface?     ++ check with factory class design pattern
+/**
+ * The ImageFactory class is used to generate images used 
+ * throughout the program
+ * 
+ * @Author Henry Browne – 37733273
+ */
+class ImageFactory { 
 
     private static Image NULL_IMAGE = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
    

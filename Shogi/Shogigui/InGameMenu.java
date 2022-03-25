@@ -3,6 +3,13 @@ package Shogigui;
 import java.io.*;
 import java.util.*;
 
+/**
+ * The InInGameMenu class is used to create the program in-game menu GUI: 
+ * the main function of this GUI is to allow users to naviagate the program 
+ * from within a board instance;
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class InGameMenu {
 
     private ArrayList<ImageFactory> inGame_Menu_Images;

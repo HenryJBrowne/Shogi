@@ -2,6 +2,12 @@ package Shogigui.pieces;
 
 import Shogigui.Board;
 
+/**
+ * The SilverGeneral class is used to generate SilverGeneral Piece objects within the program: 
+ * with all the properties corresponding to this piece
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class SilverGeneral extends Piece {
 
     public SilverGeneral(int x, int y, boolean is_white, String file_path, Board board,

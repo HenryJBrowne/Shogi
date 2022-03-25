@@ -8,6 +8,12 @@ import javax.swing.*;
 
 import Shogigui.pieces.Piece;
 
+/**
+ * The Menu class is used to create the program menu GUI allowing users to naviagate 
+ * the program and choose settings for the game used within a Board instances 
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class Menu extends JComponent {
 
     private ArrayList<ImageFactory> Menu_Images;

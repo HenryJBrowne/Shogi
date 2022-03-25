@@ -12,6 +12,13 @@ import javax.swing.JLabel;
 
 import Shogigui.pieces.Piece;
 
+
+/**
+ * The AssistedFeatures class is used to generated assisted features 
+ * such as move hints and tutorials for a Board instance
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class AssistedFeatures {
 
     private final String board_square_images_file_path = "images" + File.separator + "board" + File.separator
@@ -878,7 +885,7 @@ public class AssistedFeatures {
      * @return true if their is a possible checkmate move within the movement range
      *         of the pieces, false if not
      */
-    private boolean checkForCheckMateMoves(ArrayList<Piece> pieces) { // ++ add promotion checkmates //++ if piece
+    public boolean checkForCheckMateMoves(ArrayList<Piece> pieces) { // ++ add promotion checkmates //++ if piece
         // blocking checkmate moves is it checkmate?4
         // ++ TEST
 

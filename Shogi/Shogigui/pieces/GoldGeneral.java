@@ -2,6 +2,12 @@ package Shogigui.pieces;
 
 import Shogigui.Board;
 
+/**
+ * The GoldGeneral class is used to generate GoldGeneral Piece objects within the program: 
+ * with all the properties corresponding to this piece
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class GoldGeneral extends Piece {
 
     public GoldGeneral(int x, int y, boolean is_white, String file_path, Board board,

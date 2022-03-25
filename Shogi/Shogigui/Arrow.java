@@ -2,6 +2,11 @@ package Shogigui;
 
 import java.io.File;
 
+/**
+ * The Arrow class is used to generate arrow objects within the program
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class Arrow {
 
     private final String board_images_file_path = "images" + File.separator + "board" + File.separator; // ++

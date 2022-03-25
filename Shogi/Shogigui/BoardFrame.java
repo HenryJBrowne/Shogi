@@ -4,6 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import javax.swing.JFrame;
 
+/**
+ * The BoardFrame class is used to create a JFrame window 
+ * that stores the Board component / GUI
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class BoardFrame extends JFrame {
 
     private Component component;

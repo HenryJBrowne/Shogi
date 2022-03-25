@@ -5,6 +5,12 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 
+/**
+ * The CustomBoard class is used to add a feature to the program that allows 
+ * users to create custom scenarios to be played within a Board instance
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class CustomBoard extends Board implements Cloneable {
 
     private final String custom_board_images_file_path = "images" + File.separator + "custom_board" + File.separator;

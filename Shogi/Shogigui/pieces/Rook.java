@@ -2,6 +2,12 @@ package Shogigui.pieces;
 
 import Shogigui.Board;
 
+/**
+ * The Rook class is used to generate Rook Piece objects within the program: 
+ * with all the properties corresponding to this piece
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class Rook extends Piece {
 
     public Rook(int x, int y, boolean is_white, String file_path, Board board,

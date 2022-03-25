@@ -4,6 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import javax.swing.JFrame;
 
+/**
+ * The MenuFrame class is used to create a JFrame window 
+ * that stores the menu component / GUI
+ * 
+ * @Author Henry Browne – 37733273
+ */
 public class MenuFrame extends JFrame {
 
     private Component component; 
